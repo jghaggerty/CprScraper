@@ -198,3 +198,92 @@ class WorkItem(Base):
     
     # Relationships
     form_change = relationship("FormChange")
+
+
+class User(Base):
+    """Model for system users with role-based access control."""
+    __tablename__ = "users"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    username = Column(String(50), nullable=False, unique=True)
+    email = Column(String(100), nullable=False, unique=True)
+    first_name = Column(String(50), nullable=False)
+    last_name = Column(String(50), nullable=False)
+    password_hash = Column(String(255), nullable=False)
+    is_active = Column(Boolean, default=True)
+    is_superuser = Column(Boolean, default=False)
+    last_login = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    
+    # Relationships
+    user_roles = relationship("UserRole", back_populates="user", cascade="all, delete-orphan")
+    dashboard_preferences = relationship("UserDashboardPreference", back_populates="user", cascade="all, delete-orphan")
+    notification_preferences = relationship("UserNotificationPreference", back_populates="user", cascade="all, delete-orphan")
+
+
+class Role(Base):
+    """Model for user roles in the system."""
+    __tablename__ = "roles"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(50), nullable=False, unique=True)  # 'product_manager', 'business_analyst', 'admin'
+    display_name = Column(String(100), nullable=False)
+    description = Column(Text, nullable=True)
+    permissions = Column(JSON, nullable=True)  # JSON array of permission strings
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    
+    # Relationships
+    user_roles = relationship("UserRole", back_populates="role", cascade="all, delete-orphan")
+
+
+class UserRole(Base):
+    """Model for user-role assignments."""
+    __tablename__ = "user_roles"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    role_id = Column(Integer, ForeignKey("roles.id"), nullable=False)
+    assigned_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    assigned_at = Column(DateTime, default=func.now())
+    expires_at = Column(DateTime, nullable=True)
+    is_active = Column(Boolean, default=True)
+    
+    # Relationships
+    user = relationship("User", back_populates="user_roles", foreign_keys=[user_id])
+    role = relationship("Role", back_populates="user_roles")
+    assigned_by_user = relationship("User", foreign_keys=[assigned_by])
+
+
+class UserDashboardPreference(Base):
+    """Model for storing user dashboard preferences and layouts."""
+    __tablename__ = "user_dashboard_preferences"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    preference_key = Column(String(100), nullable=False)  # 'layout', 'widgets', 'filters', 'theme'
+    preference_value = Column(JSON, nullable=True)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    
+    # Relationships
+    user = relationship("User", back_populates="dashboard_preferences")
+
+
+class UserNotificationPreference(Base):
+    """Model for storing user notification preferences."""
+    __tablename__ = "user_notification_preferences"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    notification_type = Column(String(50), nullable=False)  # 'email', 'slack', 'teams', 'webhook'
+    change_severity = Column(String(20), nullable=True)  # 'low', 'medium', 'high', 'critical', 'all'
+    frequency = Column(String(20), nullable=False)  # 'immediate', 'hourly', 'daily', 'weekly'
+    is_enabled = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    
+    # Relationships
+    user = relationship("User", back_populates="notification_preferences")

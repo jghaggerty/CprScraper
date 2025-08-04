@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compliance Monitoring Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-content">
+                <h1><i class="fas fa-shield-alt"></i> Compliance Monitoring Dashboard</h1>
+                <div class="header-actions">
+                    <div class="user-info" id="userInfo">
+                        <span class="user-name">Loading...</span>
+                        <span class="user-role">-</span>
+                    </div>
+                    <button id="refreshBtn" class="btn btn-primary">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                    <div class="system-health" id="systemHealth">
+                        <span class="health-indicator healthy">
+                            <i class="fas fa-circle"></i> System Healthy
+                        </span>
+                    </div>
+                    <button id="logoutBtn" class="btn btn-secondary">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                    <button id="mobileMenuBtn" class="btn btn-secondary mobile-menu-btn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+                               <!-- Statistics Cards -->
+                   <section class="stats-section">
+                       <div class="stats-grid">
+                           <div class="stat-card" id="totalAgencies">
+                               <div class="stat-icon">
+                                   <i class="fas fa-building"></i>
+                               </div>
+                               <div class="stat-content">
+                                   <h3>Total Agencies</h3>
+                                   <p class="stat-number">-</p>
+                               </div>
+                           </div>
+                           <div class="stat-card" id="totalForms">
+                               <div class="stat-icon">
+                                   <i class="fas fa-file-alt"></i>
+                               </div>
+                               <div class="stat-content">
+                                   <h3>Active Forms</h3>
+                                   <p class="stat-number">-</p>
+                               </div>
+                           </div>
+                           <div class="stat-card" id="totalChanges">
+                               <div class="stat-icon">
+                                   <i class="fas fa-chart-line"></i>
+                               </div>
+                               <div class="stat-content">
+                                   <h3>Total Changes</h3>
+                                   <p class="stat-number">-</p>
+                               </div>
+                           </div>
+                           <div class="stat-card" id="criticalChanges">
+                               <div class="stat-icon critical">
+                                   <i class="fas fa-exclamation-triangle"></i>
+                               </div>
+                               <div class="stat-content">
+                                   <h3>Critical Changes</h3>
+                                   <p class="stat-number">-</p>
+                               </div>
+                           </div>
+                       </div>
+                       
+                       <!-- Real-time Monitoring Status -->
+                       <div class="realtime-status-section">
+                           <div class="status-header">
+                               <h3><i class="fas fa-broadcast-tower"></i> Real-time Monitoring Status</h3>
+                               <div class="connection-info">
+                                   <span class="connection-status" id="connectionStatus">Connecting...</span>
+                                   <span class="last-update">Last update: <span id="lastUpdateTime">-</span></span>
+                               </div>
+                           </div>
+                           
+                           <div class="realtime-metrics-grid">
+                               <div class="metric-card">
+                                   <div class="metric-icon">
+                                       <i class="fas fa-play-circle"></i>
+                                   </div>
+                                   <div class="metric-content">
+                                       <h4>Active Runs</h4>
+                                       <p class="metric-number" id="activeRunsCount">-</p>
+                                   </div>
+                               </div>
+                               <div class="metric-card">
+                                   <div class="metric-icon">
+                                       <i class="fas fa-check-circle"></i>
+                                   </div>
+                                   <div class="metric-content">
+                                       <h4>Success Rate</h4>
+                                       <p class="metric-number" id="successRate">-</p>
+                                   </div>
+                               </div>
+                               <div class="metric-card">
+                                   <div class="metric-icon">
+                                       <i class="fas fa-clock"></i>
+                                   </div>
+                                   <div class="metric-content">
+                                       <h4>Changes (1h)</h4>
+                                       <p class="metric-number" id="changesLastHour">-</p>
+                                   </div>
+                               </div>
+                               <div class="metric-card">
+                                   <div class="metric-icon">
+                                       <i class="fas fa-bolt"></i>
+                                   </div>
+                                   <div class="metric-content">
+                                       <h4>Changes (15m)</h4>
+                                       <p class="metric-number" id="changesLast15Min">-</p>
+                                   </div>
+                               </div>
+                               <div class="metric-card">
+                                   <div class="metric-icon critical">
+                                       <i class="fas fa-exclamation-triangle"></i>
+                                   </div>
+                                   <div class="metric-content">
+                                       <h4>Critical (1h)</h4>
+                                       <p class="metric-number" id="criticalChangesHour">-</p>
+                                   </div>
+                               </div>
+                               <div class="metric-card">
+                                   <div class="metric-icon">
+                                       <i class="fas fa-tachometer-alt"></i>
+                                   </div>
+                                   <div class="metric-content">
+                                       <h4>Avg Processing</h4>
+                                       <p class="metric-number" id="avgProcessingTime">-</p>
+                                   </div>
+                               </div>
+                           </div>
+                           
+                           <!-- Monitoring Status Details -->
+                           <div class="monitoring-status-details" id="monitoringStatusContainer">
+                               <!-- Real-time monitoring status will be populated here -->
+                           </div>
+                       </div>
+                   </section>
+
+            <!-- Analytics and Trends Section -->
+            <section class="analytics-section">
+                <div class="analytics-header">
+                    <h2><i class="fas fa-chart-line"></i> Analytics & Trends</h2>
+                    <div class="analytics-controls">
+                        <select id="chartMetric" class="chart-control">
+                            <option value="changes">Total Changes</option>
+                            <option value="critical_changes">Critical Changes</option>
+                            <option value="monitoring_runs">Monitoring Runs</option>
+                            <option value="response_times">Response Times</option>
+                        </select>
+                        <select id="chartPeriod" class="chart-control">
+                            <option value="7d">Last 7 Days</option>
+                            <option value="30d" selected>Last 30 Days</option>
+                            <option value="90d">Last 90 Days</option>
+                            <option value="1y">Last Year</option>
+                        </select>
+                        <button id="refreshChartsBtn" class="btn btn-secondary">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <div class="analytics-grid">
+                    <!-- Main Trend Chart -->
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3>Historical Trends</h3>
+                            <div class="trend-indicator" id="trendIndicator">
+                                <span class="trend-label">Trend:</span>
+                                <span class="trend-value" id="trendValue">-</span>
+                            </div>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Agency Performance Chart -->
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3>Agency Performance</h3>
+                            <div class="performance-summary" id="performanceSummary">
+                                <span class="avg-success">Avg Success: <span id="avgSuccessRate">-</span></span>
+                            </div>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="agencyPerformanceChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Trends Summary Cards -->
+                    <div class="trends-summary">
+                        <div class="trend-card">
+                            <div class="trend-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="trend-content">
+                                <h4>Changes Trend</h4>
+                                <p class="trend-description" id="changesTrendDesc">-</p>
+                                <span class="trend-percentage" id="changesTrendPercent">-</span>
+                            </div>
+                        </div>
+                        <div class="trend-card">
+                            <div class="trend-icon critical">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="trend-content">
+                                <h4>Critical Changes</h4>
+                                <p class="trend-description" id="criticalTrendDesc">-</p>
+                                <span class="trend-percentage" id="criticalTrendPercent">-</span>
+                            </div>
+                        </div>
+                        <div class="trend-card">
+                            <div class="trend-icon">
+                                <i class="fas fa-tachometer-alt"></i>
+                            </div>
+                            <div class="trend-content">
+                                <h4>Response Times</h4>
+                                <p class="trend-description" id="responseTrendDesc">-</p>
+                                <span class="trend-percentage" id="responseTrendPercent">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dashboard Widgets Section -->
+            <section class="widgets-section">
+                <div class="widgets-header">
+                    <h2><i class="fas fa-th-large"></i> Dashboard Widgets</h2>
+                    <div class="widgets-controls">
+                        <button id="refreshWidgetsBtn" class="btn btn-secondary">
+                            <i class="fas fa-sync-alt"></i> Refresh Widgets
+                        </button>
+                        <div class="widget-view-toggle">
+                            <button id="widgetGridBtn" class="view-btn active" data-view="grid">
+                                <i class="fas fa-th"></i>
+                            </button>
+                            <button id="widgetListBtn" class="view-btn" data-view="list">
+                                <i class="fas fa-list"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="widgets-grid" id="widgetsGrid">
+                    <!-- Recent Changes Widget -->
+                    <div class="widget-card" id="recentChangesWidget">
+                        <div class="widget-header">
+                            <div class="widget-title">
+                                <i class="fas fa-clock"></i>
+                                <h3>Recent Changes</h3>
+                            </div>
+                            <div class="widget-actions">
+                                <button class="widget-action-btn" id="viewAllChangesBtn" title="View All Changes">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </button>
+                                <button class="widget-action-btn" id="refreshRecentChangesBtn" title="Refresh">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="widget-content">
+                            <div class="widget-stats">
+                                <div class="widget-stat">
+                                    <span class="stat-label">Last Hour</span>
+                                    <span class="stat-value" id="changesLastHourWidget">-</span>
+                                </div>
+                                <div class="widget-stat">
+                                    <span class="stat-label">Last 24h</span>
+                                    <span class="stat-value" id="changesLast24hWidget">-</span>
+                                </div>
+                                <div class="widget-stat">
+                                    <span class="stat-label">Critical</span>
+                                    <span class="stat-value critical" id="criticalChangesWidget">-</span>
+                                </div>
+                            </div>
+                            <div class="widget-list" id="recentChangesList">
+                                <div class="widget-loading">
+                                    <div class="spinner-small"></div>
+                                    <span>Loading recent changes...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pending Alerts Widget -->
+                    <div class="widget-card" id="pendingAlertsWidget">
+                        <div class="widget-header">
+                            <div class="widget-title">
+                                <i class="fas fa-bell"></i>
+                                <h3>Pending Alerts</h3>
+                            </div>
+                            <div class="widget-actions">
+                                <button class="widget-action-btn" id="viewAllAlertsBtn" title="View All Alerts">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </button>
+                                <button class="widget-action-btn" id="refreshAlertsBtn" title="Refresh">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="widget-content">
+                            <div class="widget-stats">
+                                <div class="widget-stat">
+                                    <span class="stat-label">Critical</span>
+                                    <span class="stat-value critical" id="criticalAlertsWidget">-</span>
+                                </div>
+                                <div class="widget-stat">
+                                    <span class="stat-label">High</span>
+                                    <span class="stat-value high" id="highAlertsWidget">-</span>
+                                </div>
+                                <div class="widget-stat">
+                                    <span class="stat-label">Total</span>
+                                    <span class="stat-value" id="totalAlertsWidget">-</span>
+                                </div>
+                            </div>
+                            <div class="widget-list" id="pendingAlertsList">
+                                <div class="widget-loading">
+                                    <div class="spinner-small"></div>
+                                    <span>Loading alerts...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Compliance Status Widget -->
+                    <div class="widget-card" id="complianceStatusWidget">
+                        <div class="widget-header">
+                            <div class="widget-title">
+                                <i class="fas fa-shield-check"></i>
+                                <h3>Compliance Status</h3>
+                            </div>
+                            <div class="widget-actions">
+                                <button class="widget-action-btn" id="viewComplianceReportBtn" title="View Report">
+                                    <i class="fas fa-file-alt"></i>
+                                </button>
+                                <button class="widget-action-btn" id="refreshComplianceBtn" title="Refresh">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="widget-content">
+                            <div class="compliance-overview">
+                                <div class="compliance-score">
+                                    <div class="score-circle" id="complianceScoreCircle">
+                                        <span class="score-value" id="complianceScore">-</span>
+                                        <span class="score-label">%</span>
+                                    </div>
+                                    <div class="score-details">
+                                        <h4>Overall Compliance</h4>
+                                        <p id="complianceStatus">-</p>
+                                    </div>
+                                </div>
+                                <div class="compliance-breakdown">
+                                    <div class="compliance-item">
+                                        <span class="item-label">Forms Up-to-Date</span>
+                                        <span class="item-value" id="formsUpToDate">-</span>
+                                    </div>
+                                    <div class="compliance-item">
+                                        <span class="item-label">Pending Reviews</span>
+                                        <span class="item-value" id="pendingReviews">-</span>
+                                    </div>
+                                    <div class="compliance-item">
+                                        <span class="item-label">Overdue</span>
+                                        <span class="item-value critical" id="overdueItems">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Agency Health Widget -->
+                    <div class="widget-card" id="agencyHealthWidget">
+                        <div class="widget-header">
+                            <div class="widget-title">
+                                <i class="fas fa-heartbeat"></i>
+                                <h3>Agency Health</h3>
+                            </div>
+                            <div class="widget-actions">
+                                <button class="widget-action-btn" id="viewAgencyDetailsBtn" title="View Details">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </button>
+                                <button class="widget-action-btn" id="refreshAgencyHealthBtn" title="Refresh">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="widget-content">
+                            <div class="health-summary">
+                                <div class="health-stat">
+                                    <span class="health-label">Healthy</span>
+                                    <span class="health-value healthy" id="healthyAgencies">-</span>
+                                </div>
+                                <div class="health-stat">
+                                    <span class="health-label">Warning</span>
+                                    <span class="health-value warning" id="warningAgencies">-</span>
+                                </div>
+                                <div class="health-stat">
+                                    <span class="health-label">Critical</span>
+                                    <span class="health-value critical" id="criticalAgencies">-</span>
+                                </div>
+                            </div>
+                            <div class="agency-list" id="agencyHealthList">
+                                <div class="widget-loading">
+                                    <div class="spinner-small"></div>
+                                    <span>Loading agency health...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Monitoring Activity Widget -->
+                    <div class="widget-card" id="monitoringActivityWidget">
+                        <div class="widget-header">
+                            <div class="widget-title">
+                                <i class="fas fa-activity"></i>
+                                <h3>Monitoring Activity</h3>
+                            </div>
+                            <div class="widget-actions">
+                                <button class="widget-action-btn" id="viewMonitoringLogBtn" title="View Log">
+                                    <i class="fas fa-list-alt"></i>
+                                </button>
+                                <button class="widget-action-btn" id="refreshActivityBtn" title="Refresh">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="widget-content">
+                            <div class="activity-stats">
+                                <div class="activity-stat">
+                                    <span class="activity-label">Active Runs</span>
+                                    <span class="activity-value" id="activeMonitoringRuns">-</span>
+                                </div>
+                                <div class="activity-stat">
+                                    <span class="activity-label">Success Rate</span>
+                                    <span class="activity-value" id="monitoringSuccessRate">-</span>
+                                </div>
+                                <div class="activity-stat">
+                                    <span class="activity-label">Avg Time</span>
+                                    <span class="activity-value" id="avgMonitoringTime">-</span>
+                                </div>
+                            </div>
+                            <div class="activity-timeline" id="monitoringActivityTimeline">
+                                <div class="widget-loading">
+                                    <div class="spinner-small"></div>
+                                    <span>Loading activity...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions Widget -->
+                    <div class="widget-card" id="quickActionsWidget">
+                        <div class="widget-header">
+                            <div class="widget-title">
+                                <i class="fas fa-bolt"></i>
+                                <h3>Quick Actions</h3>
+                            </div>
+                        </div>
+                        <div class="widget-content">
+                            <div class="quick-actions-grid">
+                                <button class="quick-action-btn" id="exportDataBtn" data-action="export">
+                                    <i class="fas fa-download"></i>
+                                    <span>Export Data</span>
+                                </button>
+                                <button class="quick-action-btn" id="generateReportBtn" data-action="report">
+                                    <i class="fas fa-file-pdf"></i>
+                                    <span>Generate Report</span>
+                                </button>
+                                <button class="quick-action-btn" id="scheduleMonitoringBtn" data-action="schedule">
+                                    <i class="fas fa-calendar-plus"></i>
+                                    <span>Schedule Monitoring</span>
+                                </button>
+                                <button class="quick-action-btn" id="manageNotificationsBtn" data-action="notifications">
+                                    <i class="fas fa-cog"></i>
+                                    <span>Notification Settings</span>
+                                </button>
+                                <button class="quick-action-btn" id="viewAnalyticsBtn" data-action="analytics">
+                                    <i class="fas fa-chart-bar"></i>
+                                    <span>View Analytics</span>
+                                </button>
+                                <button class="quick-action-btn" id="systemHealthBtn" data-action="health">
+                                    <i class="fas fa-stethoscope"></i>
+                                    <span>System Health</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Filters and Search Section -->
+            <section class="filters-section">
+                <div class="filters-header">
+                    <h2><i class="fas fa-filter"></i> Filters & Search</h2>
+                    <button id="clearFiltersBtn" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Clear All
+                    </button>
+                </div>
+                
+                <div class="filters-grid">
+                    <!-- Search Bar -->
+                    <div class="filter-group search-group">
+                        <label for="searchInput">Search</label>
+                        <div class="search-container">
+                            <input type="text" id="searchInput" placeholder="Search forms, agencies, or changes...">
+                            <button id="searchBtn" class="search-btn">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- State/Type Filter -->
+                    <div class="filter-group">
+                        <label for="stateFilter">State/Agency Type</label>
+                        <select id="stateFilter">
+                            <option value="">All States</option>
+                        </select>
+                    </div>
+
+                    <!-- Agency Filter -->
+                    <div class="filter-group">
+                        <label for="agencyFilter">Agency</label>
+                        <select id="agencyFilter">
+                            <option value="">All Agencies</option>
+                        </select>
+                    </div>
+
+                    <!-- Form Type Filter -->
+                    <div class="filter-group">
+                        <label for="formTypeFilter">Form Type</label>
+                        <select id="formTypeFilter">
+                            <option value="">All Forms</option>
+                        </select>
+                    </div>
+
+                    <!-- Severity Filter -->
+                    <div class="filter-group">
+                        <label for="severityFilter">Severity</label>
+                        <select id="severityFilter">
+                            <option value="">All Severities</option>
+                            <option value="critical">Critical</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+
+                    <!-- Date Range Filter -->
+                    <div class="filter-group">
+                        <label for="dateRangeFilter">Date Range</label>
+                        <select id="dateRangeFilter">
+                            <option value="">All Time</option>
+                            <option value="24h">Last 24 Hours</option>
+                            <option value="7d">Last 7 Days</option>
+                            <option value="30d">Last 30 Days</option>
+                            <option value="90d">Last 90 Days</option>
+                            <option value="1y">Last Year</option>
+                        </select>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div class="filter-group">
+                        <label for="statusFilter">Status</label>
+                        <select id="statusFilter">
+                            <option value="">All Statuses</option>
+                            <option value="new">New</option>
+                            <option value="reviewed">Reviewed</option>
+                            <option value="resolved">Resolved</option>
+                            <option value="ignored">Ignored</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Applied Filters Display -->
+                <div class="applied-filters" id="appliedFilters">
+                    <h4>Applied Filters:</h4>
+                    <div class="filter-tags" id="filterTags"></div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-section">
+                <div class="results-header">
+                    <h2><i class="fas fa-list"></i> Recent Changes</h2>
+                    <div class="results-controls">
+                        <div class="sort-controls">
+                            <label for="sortBy">Sort by:</label>
+                            <select id="sortBy">
+                                <option value="detected_at">Detection Date</option>
+                                <option value="severity">Severity</option>
+                                <option value="agency_name">Agency</option>
+                                <option value="form_name">Form</option>
+                            </select>
+                            <button id="sortOrderBtn" class="sort-order-btn" data-order="desc">
+                                <i class="fas fa-sort-amount-down"></i>
+                            </button>
+                        </div>
+                        <div class="view-controls">
+                            <button id="tableViewBtn" class="view-btn active" data-view="table">
+                                <i class="fas fa-table"></i>
+                            </button>
+                            <button id="cardViewBtn" class="view-btn" data-view="cards">
+                                <i class="fas fa-th-large"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div class="loading-state" id="loadingState">
+                    <div class="spinner"></div>
+                    <p>Loading data...</p>
+                </div>
+
+                <!-- Results Table -->
+                <div class="results-table-container" id="resultsContainer">
+                    <table class="results-table" id="resultsTable">
+                        <thead>
+                            <tr>
+                                <th>Form</th>
+                                <th>Agency</th>
+                                <th>Change Type</th>
+                                <th>Severity</th>
+                                <th>Status</th>
+                                <th>Detected</th>
+                                <th>AI Confidence</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsTableBody">
+                            <!-- Results will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Results Cards (Alternative View) -->
+                <div class="results-cards" id="resultsCards" style="display: none;">
+                    <!-- Cards will be populated here -->
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination" id="pagination">
+                    <button id="prevPageBtn" class="pagination-btn" disabled>
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </button>
+                    <div class="page-info">
+                        <span id="pageInfo">Page 1 of 1</span>
+                    </div>
+                    <button id="nextPageBtn" class="pagination-btn">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Export Section -->
+            <section class="export-section">
+                <div class="export-header">
+                    <h2><i class="fas fa-download"></i> Data Export</h2>
+                    <div class="export-controls">
+                        <button id="refreshExportFormatsBtn" class="btn btn-secondary">
+                            <i class="fas fa-sync-alt"></i> Refresh Formats
+                        </button>
+                        <button id="viewScheduledExportsBtn" class="btn btn-secondary">
+                            <i class="fas fa-calendar-alt"></i> Scheduled Exports
+                        </button>
+                    </div>
+                </div>
+
+                <div class="export-content">
+                    <!-- Export Configuration -->
+                    <div class="export-config">
+                        <div class="export-formats" id="exportFormats">
+                            <h3>Available Export Formats</h3>
+                            <div class="formats-grid" id="formatsGrid">
+                                <!-- Export formats will be populated here -->
+                            </div>
+                        </div>
+
+                        <div class="export-options">
+                            <h3>Export Options</h3>
+                            <div class="export-form">
+                                <div class="form-group">
+                                    <label for="exportFormat">Format:</label>
+                                    <select id="exportFormat" class="form-control">
+                                        <option value="csv">CSV</option>
+                                        <option value="excel">Excel</option>
+                                        <option value="pdf">PDF</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="exportColumns">Columns:</label>
+                                    <div class="columns-selector" id="columnsSelector">
+                                        <label class="checkbox-item">
+                                            <input type="checkbox" value="id" checked> ID
+                                        </label>
+                                        <label class="checkbox-item">
+                                            <input type="checkbox" value="form_name" checked> Form Name
+                                        </label>
+                                        <label class="checkbox-item">
+                                            <input type="checkbox" value="agency_name" checked> Agency
+                                        </label>
+                                        <label class="checkbox-item">
+                                            <input type="checkbox" value="change_type" checked> Change Type
+                                        </label>
+                                        <label class="checkbox-item">
+                                            <input type="checkbox" value="severity" checked> Severity
+                                        </label>
+                                        <label class="checkbox-item">
+                                            <input type="checkbox" value="status" checked> Status
+                                        </label>
+                                        <label class="checkbox-item">
+                                            <input type="checkbox" value="detected_at" checked> Detected At
+                                        </label>
+                                        <label class="checkbox-item">
+                                            <input type="checkbox" value="ai_confidence_score"> AI Confidence
+                                        </label>
+                                        <label class="checkbox-item">
+                                            <input type="checkbox" value="description"> Description
+                                        </label>
+                                        <label class="checkbox-item">
+                                            <input type="checkbox" value="url"> URL
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="exportFilename">Filename (optional):</label>
+                                    <input type="text" id="exportFilename" class="form-control" placeholder="compliance_export">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" id="includeHeaders" checked> Include Headers
+                                    </label>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" id="useCurrentFilters" checked> Use Current Filters
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Export Actions -->
+                    <div class="export-actions">
+                        <button id="exportDataBtn" class="btn btn-primary">
+                            <i class="fas fa-download"></i> Export Data
+                        </button>
+                        <button id="scheduleExportBtn" class="btn btn-secondary">
+                            <i class="fas fa-calendar-plus"></i> Schedule Export
+                        </button>
+                        <button id="bulkExportBtn" class="btn btn-secondary">
+                            <i class="fas fa-file-archive"></i> Bulk Export
+                        </button>
+                    </div>
+
+                    <!-- Export Status -->
+                    <div class="export-status" id="exportStatus" style="display: none;">
+                        <div class="status-content">
+                            <div class="spinner-small"></div>
+                            <span id="exportStatusMessage">Preparing export...</span>
+                        </div>
+                    </div>
+
+                    <!-- Export History -->
+                    <div class="export-history">
+                        <h3>Recent Exports</h3>
+                        <div class="export-list" id="exportList">
+                            <!-- Export history will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Alerts Section -->
+            <section class="alerts-section">
+                <div class="alerts-header">
+                    <h2><i class="fas fa-bell"></i> Active Alerts</h2>
+                    <span class="alert-count" id="alertCount">0</span>
+                </div>
+                <div class="alerts-container" id="alertsContainer">
+                    <!-- Alerts will be populated here -->
+                </div>
+            </section>
+        </main>
+
+        <!-- Sidebar for Additional Info -->
+        <aside class="dashboard-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h3>Quick Stats</h3>
+                <button id="closeSidebarBtn" class="close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="sidebar-content">
+                <div class="quick-stat">
+                    <h4>Changes Last 24h</h4>
+                    <p id="changes24h">-</p>
+                </div>
+                <div class="quick-stat">
+                    <h4>Changes Last Week</h4>
+                    <p id="changesWeek">-</p>
+                </div>
+                <div class="quick-stat">
+                    <h4>Coverage</h4>
+                    <p id="coveragePercentage">-</p>
+                </div>
+                <div class="quick-stat">
+                    <h4>Pending Notifications</h4>
+                    <p id="pendingNotifications">-</p>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Mobile Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    </div>
+
+               <!-- Real-time Notifications Container -->
+           <div class="notifications-container" id="notificationContainer">
+               <!-- Real-time notifications will be populated here -->
+           </div>
+
+           <!-- Modal for Change Details -->
+           <div class="modal" id="changeModal">
+               <div class="modal-content">
+                   <div class="modal-header">
+                       <h3>Change Details</h3>
+                       <button class="close-btn" id="closeModalBtn">
+                           <i class="fas fa-times"></i>
+                       </button>
+                   </div>
+                   <div class="modal-body" id="modalBody">
+                       <!-- Change details will be populated here -->
+                   </div>
+               </div>
+           </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html> 
