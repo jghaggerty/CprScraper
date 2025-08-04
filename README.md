@@ -1,152 +1,84 @@
-# 🚨 Payroll Monitoring System
+# Payroll Monitoring System
 
-An AI-powered monitoring system for government certified payroll reporting requirements across all 50 states, federal, and other government agencies. This system continuously monitors for changes in payroll forms, templates, and requirements, providing immediate alerts and comprehensive impact analysis.
+An AI-powered monitoring system that tracks government agency form changes across all 50 states and federal agencies for certified payroll reporting requirements.
 
-## 🎯 Project Goals
+## Features
 
-**Goal 1:** Increased confidence in report maintenance  
-**Goal 2:** Decreased report change requests  
-**Objective:** Consistent, transparent, and proactive report updates
+- **Comprehensive Monitoring**: Tracks forms from all 50 states and federal agencies
+- **AI-Powered Analysis**: Uses machine learning to detect meaningful changes
+- **Real-time Notifications**: Email, Slack, and Teams integration
+- **Web Dashboard**: Real-time monitoring dashboard with charts and statistics
+- **Automated Scheduling**: Configurable monitoring frequencies
+- **Change Detection**: Sophisticated content comparison and change tracking
+- **Database Storage**: Persistent storage of all monitoring data
+- **API Access**: RESTful API for integration with other systems
 
-## 🏗️ System Architecture
-
-The system consists of several integrated components:
-
-- **Web Scraping Engine**: Monitors government websites for form changes
-- **Change Detection**: AI-powered algorithms to identify modifications
-- **Notification System**: Multi-channel alerts (Email, Slack, Teams)
-- **Impact Analysis**: Comprehensive reporting on client and development impact
-- **Automated Scheduler**: Regular monitoring with configurable frequencies
-- **Web Dashboard**: Real-time monitoring and management interface
-- **Database**: SQLite/PostgreSQL for data persistence
-
-## 📋 Features
-
-### Monitoring Capabilities
-- ✅ All 50 US states monitoring
-- ✅ Federal agencies (DOL, etc.)
-- ✅ Form change detection (WH-347, CA_A1131, etc.)
-- ✅ Automated scheduling (daily, weekly, monthly)
-- ✅ Real-time change alerts
-
-### Impact Analysis
-- ✅ Client impact assessment
-- ✅ Development effort estimation  
-- ✅ Risk assessment and mitigation
-- ✅ Timeline projections
-- ✅ Resource planning
-
-### Notifications
-- ✅ Email notifications with detailed HTML reports
-- ✅ Slack integration with rich formatting
-- ✅ Microsoft Teams webhook support
-- ✅ Customizable notification templates
-
-### Dashboard & Reporting
-- ✅ Real-time web dashboard
-- ✅ Activity monitoring and statistics
-- ✅ Change history tracking
-- ✅ Executive summary reports
-- ✅ API endpoints for integration
-
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
-- Python 3.8+
-- Dependencies (installed via requirements.txt)
-- Optional: Chrome/Chromium for JavaScript-heavy sites
+- Python 3.11+
+- Chrome/Chromium browser (for Selenium web scraping)
+- SMTP server for email notifications
 
 ### Installation
 
 1. **Clone the repository**
-```bash
-git clone <repository-url>
-cd payroll-monitoring-system
-```
+   ```bash
+   git clone <repository-url>
+   cd CprScraper
+   ```
 
 2. **Install dependencies**
-```bash
-pip install -r requirements.txt
-```
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-3. **Create required directories**
-```bash
-mkdir -p data logs static templates
-```
+3. **Set up environment variables**
+   ```bash
+   cp env.example .env
+   # Edit .env with your configuration
+   ```
 
-4. **Initialize the system**
-```bash
-python main.py init-db
-python main.py load-data
-```
+4. **Initialize the database**
+   ```bash
+   python main.py init-db
+   ```
 
-5. **Start the system**
-```bash
-python main.py start
-```
+5. **Load agency data**
+   ```bash
+   python main.py load-data
+   ```
 
-The dashboard will be available at http://localhost:8000
+6. **Start the system**
+   ```bash
+   python main.py start
+   ```
 
-### Alternative Commands
-
-```bash
-# Initialize database only
-python main.py init-db
-
-# Load agency configuration
-python main.py load-data
-
-# Run immediate monitoring check
-python main.py monitor
-
-# Start only the dashboard
-python main.py dashboard
-
-# Start only the scheduler
-python main.py scheduler
-
-# Run system tests
-python main.py test
-```
-
-## ⚙️ Configuration
+## Configuration
 
 ### Environment Variables
 
 Create a `.env` file with the following variables:
 
-```env
-# Database
-DATABASE_URL=sqlite:///./data/payroll_monitor.db
-DB_ECHO=false
-
-# Email Notifications
+```bash
+# Required
 SMTP_SERVER=smtp.gmail.com
 SMTP_USERNAME=your-email@gmail.com
 SMTP_PASSWORD=your-app-password
-FROM_EMAIL=your-email@gmail.com
-ALERT_EMAIL_1=stakeholder1@company.com
-ALERT_EMAIL_2=stakeholder2@company.com
+FROM_EMAIL=alerts@yourcompany.com
+ALERT_EMAIL_1=admin@yourcompany.com
 
-# Slack (optional)
-SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
-
-# Teams (optional)
-TEAMS_WEBHOOK_URL=https://company.webhook.office.com/...
+# Optional
+SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK
+TEAMS_WEBHOOK_URL=https://yourcompany.webhook.office.com/webhookb2/YOUR/WEBHOOK
+OPENAI_API_KEY=your-openai-api-key
 ```
 
 ### Agency Configuration
 
-The system uses `config/agencies.yaml` to define which agencies and forms to monitor. The configuration includes:
+Edit `config/agencies.yaml` to add or modify agencies and forms:
 
-- Federal agencies (Department of Labor, etc.)
-- All 50 state agencies
-- Form details (URLs, check frequencies, contact information)
-- Monitoring settings
-- Notification preferences
-
-Example configuration structure:
 ```yaml
 federal:
   department_of_labor:
@@ -155,204 +87,251 @@ federal:
     forms:
       - name: "WH-347"
         title: "Statement of Compliance for Federal and Federally Assisted Construction Projects"
-        url: "https://www.dol.gov/sites/dolgov/files/WHD/legacy/files/wh347.pdf"
-        check_frequency: "daily"
-
-states:
-  california:
-    name: "California Department of Industrial Relations"
-    abbreviation: "CA"
-    forms:
-      - name: "A1-131"
-        title: "California Certified Payroll Report"
+        url: "https://www.dol.gov/agencies/whd/government-contracts/construction"
         check_frequency: "daily"
 ```
 
-## 📊 Dashboard Features
+## Usage
 
-The web dashboard provides:
+### Command Line Interface
 
-### Overview Statistics
-- Total agencies and forms monitored
-- Recent changes (24h, weekly)
-- System status and health
-
-### Recent Changes
-- Real-time change notifications
-- Severity indicators (low, medium, high, critical)
-- Agency and form details
-
-### System Controls
-- Start/stop scheduler
-- Run immediate monitoring checks
-- Test notification systems
-
-### Activity Charts
-- Monitoring run history
-- Change detection trends
-- Performance metrics
-
-## 🔄 Development Workflow
-
-When a change is detected, the system follows this workflow:
-
-### 1. **Change Detection & Notification**
-- System detects form modification
-- Immediate notification sent to stakeholders
-- Change details logged in database
-
-### 2. **Impact Assessment**
-Information provided includes:
-- Agency and report details
-- Detailed description of changes
-- Resource links (specifications, instructions, agency contact)
-- Field mapping information (current vs. updated)
-- Date changes take effect
-- Clients impacted (number and ICP segment percentage)
-
-### 3. **Development Process**
-Following strict guidelines:
-- **Evaluation**: Effort, risk, and impact assessment
-- **Development**: Implementation following report update guidelines
-- **QA**: Comprehensive testing including weekly/bi-weekly scenarios
-- **EUT**: End-user testing and final review
-- **Production**: Release with stakeholder notification
-- **Monitoring**: 3-month feedback collection period
-
-### 4. **Quality Assurance**
-Testing includes:
-- Weekly/Bi-weekly reporting scenarios
-- Time entries and data entry validation
-- ST/OT/Other hours calculations
-- Old and new fringes handling
-- Report options and no work reporting
-- Calculation evaluation and font/alignment checks
-
-## 🔧 API Endpoints
-
-The system provides REST API endpoints:
-
-### Monitoring
-- `GET /api/stats` - Overall monitoring statistics
-- `GET /api/agencies` - List all agencies
-- `GET /api/agencies/{id}/forms` - Forms for specific agency
-- `GET /api/changes` - Recent form changes
-
-### Scheduler Control
-- `GET /api/scheduler/status` - Scheduler status
-- `POST /api/scheduler/start` - Start scheduler
-- `POST /api/scheduler/stop` - Stop scheduler
-- `POST /api/scheduler/run-immediate` - Run immediate check
-
-### Notifications
-- `POST /api/notifications/send` - Send notification for specific change
-- `POST /api/notifications/test` - Test all notification channels
-
-### Health Check
-- `GET /health` - System health status
-
-## 🏢 Production Deployment
-
-### Docker Deployment
-
-1. **Create Dockerfile**
-```dockerfile
-FROM python:3.9-slim
-
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-
-COPY . .
-RUN python main.py init-db
-
-EXPOSE 8000
-CMD ["python", "main.py", "start"]
-```
-
-2. **Build and run**
 ```bash
-docker build -t payroll-monitor .
-docker run -p 8000:8000 payroll-monitor
+# Initialize database
+python main.py init-db
+
+# Load agency data from configuration
+python main.py load-data
+
+# Run immediate monitoring check
+python main.py monitor
+
+# Run system tests
+python main.py test
+
+# Start web dashboard only
+python main.py dashboard
+
+# Start scheduler only
+python main.py scheduler
+
+# Start full system (scheduler + dashboard)
+python main.py start
 ```
 
-### Environment Setup
+### Web Dashboard
 
-For production:
-- Use PostgreSQL instead of SQLite
-- Configure proper SMTP server
-- Set up SSL/TLS for web dashboard
-- Configure reverse proxy (nginx)
-- Set up monitoring and logging
-- Configure backup procedures
+Access the web dashboard at `http://localhost:8000` to view:
 
-## 📈 Monitoring & Maintenance
+- Real-time monitoring statistics
+- Recent form changes
+- System status
+- Activity charts
+- Agency and form management
 
-### System Health
-- Dashboard shows real-time system status
-- Automated health checks
-- Error logging and alerting
+### API Endpoints
 
-### Database Maintenance
-- Automatic cleanup of old monitoring runs (90 days)
-- Notification history cleanup (180 days)
-- Regular database backups
+The system provides RESTful API endpoints:
 
-### Performance Monitoring
-- Monitoring run performance tracking
-- Response time metrics
-- Error rate monitoring
+- `GET /api/stats` - Get monitoring statistics
+- `GET /api/agencies` - List all agencies
+- `GET /api/changes` - Get form changes
+- `POST /api/scheduler/run-immediate` - Run immediate monitoring
+- `GET /health` - Health check
 
-## 🔒 Security Considerations
+## Docker Deployment
 
-- Secure storage of credentials using environment variables
-- HTTPS for all external communications
-- Rate limiting for web scraping
-- Input validation and sanitization
-- Audit logging for all changes
+### Using Docker Compose
 
-## 🤝 Contributing
+1. **Build and start services**
+   ```bash
+   docker-compose up -d
+   ```
+
+2. **View logs**
+   ```bash
+   docker-compose logs -f app
+   ```
+
+3. **Stop services**
+   ```bash
+   docker-compose down
+   ```
+
+### Using Docker
+
+1. **Build image**
+   ```bash
+   docker build -t payroll-monitor .
+   ```
+
+2. **Run container**
+   ```bash
+   docker run -p 8000:8000 --env-file .env payroll-monitor
+   ```
+
+## Architecture
+
+### Components
+
+- **Web Scraper**: Monitors government websites for changes
+- **AI Analysis**: Analyzes content changes using machine learning
+- **Scheduler**: Manages automated monitoring schedules
+- **Notification System**: Sends alerts via multiple channels
+- **Database**: Stores monitoring data and change history
+- **API**: Provides RESTful interface for external systems
+- **Dashboard**: Web interface for monitoring and management
+
+### Data Flow
+
+1. **Scheduler** triggers monitoring jobs based on configuration
+2. **Web Scraper** fetches content from government websites
+3. **AI Analysis** compares content and detects meaningful changes
+4. **Database** stores monitoring results and change history
+5. **Notification System** sends alerts for detected changes
+6. **Dashboard** displays real-time statistics and data
+
+## Development
+
+### Project Structure
+
+```
+CprScraper/
+├── config/
+│   └── agencies.yaml          # Agency and form configurations
+├── src/
+│   ├── analysis/              # AI analysis components
+│   ├── api/                   # FastAPI web interface
+│   ├── database/              # Database models and connection
+│   ├── monitors/              # Web scraping and monitoring
+│   ├── notifications/         # Notification system
+│   ├── scheduler/             # Task scheduling
+│   └── utils/                 # Utility functions
+├── tests/                     # Test files
+├── main.py                    # Main application entry point
+├── requirements.txt           # Python dependencies
+└── docker-compose.yml         # Docker deployment
+```
+
+### Running Tests
+
+```bash
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=src
+
+# Run specific test file
+pytest tests/test_analysis.py
+```
+
+### Code Quality
+
+```bash
+# Format code
+black src/ tests/
+
+# Lint code
+flake8 src/ tests/
+
+# Type checking
+mypy src/
+```
+
+## Monitoring and Maintenance
+
+### Health Checks
+
+The system includes health check endpoints:
+
+- `GET /health` - Basic health check
+- `GET /api/scheduler/status` - Scheduler status
+- Database connection tests
+- External service connectivity
+
+### Logging
+
+Logs are written to:
+- Console output
+- `logs/payroll_monitor.log` file
+- Structured logging for production
+
+### Data Cleanup
+
+The system automatically cleans up old data:
+- Monitoring runs older than 90 days
+- Notifications older than 180 days
+- Temporary files and caches
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Database Connection Errors**
+   - Check database URL in environment variables
+   - Ensure database server is running
+   - Verify database permissions
+
+2. **Web Scraping Failures**
+   - Check internet connectivity
+   - Verify target websites are accessible
+   - Review Chrome/ChromeDriver installation
+
+3. **Email Notification Failures**
+   - Verify SMTP settings
+   - Check email credentials
+   - Review firewall settings
+
+4. **Scheduler Issues**
+   - Check system time and timezone
+   - Verify cron/scheduler permissions
+   - Review log files for errors
+
+### Debug Mode
+
+Enable debug logging:
+
+```bash
+export LOG_LEVEL=DEBUG
+python main.py start
+```
+
+### Performance Tuning
+
+- Adjust database connection pool size
+- Configure monitoring timeouts
+- Optimize retry attempts
+- Tune AI analysis parameters
+
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
 4. Add tests for new functionality
-5. Submit a pull request
+5. Ensure all tests pass
+6. Submit a pull request
 
-## 📄 License
+## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 📞 Support
+## Support
 
-For questions or support:
-- Check the logs in the `logs/` directory
-- Use the test command: `python main.py test`
-- Review the configuration in `config/agencies.yaml`
-- Check the dashboard at http://localhost:8000
+For support and questions:
 
-## 🗺️ Roadmap
+- Create an issue in the GitHub repository
+- Check the documentation
+- Review the troubleshooting guide
+- Contact the development team
 
-### Phase 1 (Current)
-- ✅ Core monitoring system
-- ✅ Basic notification system
-- ✅ Web dashboard
-- ✅ Impact analysis
+## Roadmap
 
-### Phase 2 (Planned)
-- [ ] Machine learning for change prediction
-- [ ] Advanced form parsing and comparison
-- [ ] Integration with project management tools
-- [ ] Mobile notifications
-- [ ] Advanced analytics and reporting
-
-### Phase 3 (Future)
-- [ ] Multi-language support
-- [ ] Custom notification rules
-- [ ] Integration with CPR system
-- [ ] Automated testing framework
-- [ ] Advanced AI-powered insights
-
----
-
-**Built with ❤️ for efficient payroll compliance management**
+- [ ] Enhanced AI analysis capabilities
+- [ ] Mobile dashboard application
+- [ ] Integration with more notification platforms
+- [ ] Advanced reporting and analytics
+- [ ] Multi-tenant support
+- [ ] API rate limiting and authentication
+- [ ] Automated form field mapping
+- [ ] Machine learning model training interface

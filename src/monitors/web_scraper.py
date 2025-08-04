@@ -3,9 +3,9 @@ import hashlib
 import logging
 import time
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Any
 from urllib.parse import urljoin, urlparse
-
+from contextlib import asynccontextmanager
 import aiohttp
 import requests
 from bs4 import BeautifulSoup
@@ -15,22 +15,95 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, WebDriverException
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 
 from ..database.connection import get_db
 from ..database.models import Agency, Form, FormChange, MonitoringRun
-from ..utils.config_loader import load_agency_config
+from ..utils.config_loader import load_agency_config, get_monitoring_settings
 
 logger = logging.getLogger(__name__)
+
+
+class WebDriverPool:
+    """Pool for managing WebDriver instances."""
+    
+    def __init__(self, max_drivers: int = 3):
+        self.max_drivers = max_drivers
+        self.drivers: List[webdriver.Chrome] = []
+        self.available_drivers: List[webdriver.Chrome] = []
+        self._lock = asyncio.Lock()
+    
+    async def get_driver(self) -> Optional[webdriver.Chrome]:
+        """Get an available WebDriver instance."""
+        async with self._lock:
+            if self.available_drivers:
+                return self.available_drivers.pop()
+            
+            if len(self.drivers) < self.max_drivers:
+                driver = self._create_driver()
+                if driver:
+                    self.drivers.append(driver)
+                    return driver
+            
+            return None
+    
+    async def return_driver(self, driver: webdriver.Chrome) -> None:
+        """Return a WebDriver instance to the pool."""
+        async with self._lock:
+            if driver in self.drivers and driver not in self.available_drivers:
+                self.available_drivers.append(driver)
+    
+    def _create_driver(self) -> Optional[webdriver.Chrome]:
+        """Create a new WebDriver instance."""
+        try:
+            chrome_options = Options()
+            chrome_options.add_argument("--headless")
+            chrome_options.add_argument("--no-sandbox")
+            chrome_options.add_argument("--disable-dev-shm-usage")
+            chrome_options.add_argument("--disable-gpu")
+            chrome_options.add_argument("--disable-extensions")
+            chrome_options.add_argument("--disable-plugins")
+            chrome_options.add_argument("--disable-images")
+            chrome_options.add_argument("--disable-javascript")  # Only if not needed
+            chrome_options.add_argument("--user-agent=PayrollMonitor/1.0 (Government Forms Monitoring)")
+            
+            # Use webdriver-manager to handle driver installation
+            service = Service(ChromeDriverManager().install())
+            driver = webdriver.Chrome(service=service, options=chrome_options)
+            driver.set_page_load_timeout(30)
+            driver.implicitly_wait(10)
+            
+            logger.debug("Created new WebDriver instance")
+            return driver
+            
+        except Exception as e:
+            logger.error(f"Failed to create WebDriver: {e}")
+            return None
+    
+    async def cleanup(self) -> None:
+        """Clean up all WebDriver instances."""
+        async with self._lock:
+            for driver in self.drivers:
+                try:
+                    driver.quit()
+                except Exception as e:
+                    logger.error(f"Error closing WebDriver: {e}")
+            
+            self.drivers.clear()
+            self.available_drivers.clear()
+            logger.info("WebDriver pool cleaned up")
 
 
 class WebScraper:
     """Core web scraping class for monitoring government websites."""
     
-    def __init__(self, user_agent: str = None, timeout: int = 30):
+    def __init__(self, user_agent: Optional[str] = None, timeout: int = 30, max_retries: int = 3):
         self.user_agent = user_agent or "PayrollMonitor/1.0 (Government Forms Monitoring)"
         self.timeout = timeout
-        self.session = None
-        self.driver = None
+        self.max_retries = max_retries
+        self.session: Optional[aiohttp.ClientSession] = None
+        self.driver_pool = WebDriverPool()
         
     async def __aenter__(self):
         """Async context manager entry."""
@@ -44,46 +117,50 @@ class WebScraper:
         """Async context manager exit."""
         if self.session:
             await self.session.close()
-        if self.driver:
-            self.driver.quit()
+        await self.driver_pool.cleanup()
     
-    def _setup_selenium_driver(self) -> webdriver.Chrome:
-        """Set up Selenium Chrome driver for JavaScript-heavy sites."""
-        chrome_options = Options()
-        chrome_options.add_argument("--headless")
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-        chrome_options.add_argument("--disable-gpu")
-        chrome_options.add_argument(f"--user-agent={self.user_agent}")
-        
-        try:
-            driver = webdriver.Chrome(options=chrome_options)
-            driver.set_page_load_timeout(self.timeout)
-            return driver
-        except Exception as e:
-            logger.error(f"Failed to initialize Chrome driver: {e}")
-            return None
-    
-    async def fetch_page_content(self, url: str, use_selenium: bool = False) -> Tuple[str, int, Dict]:
+    async def fetch_page_content(self, url: str, use_selenium: bool = False) -> Tuple[str, int, Dict[str, Any]]:
         """
-        Fetch page content using either aiohttp or Selenium.
+        Fetch page content using either aiohttp or Selenium with retry logic.
         
+        Args:
+            url: URL to fetch
+            use_selenium: Whether to use Selenium for JavaScript-heavy sites
+            
         Returns:
             Tuple of (content, status_code, metadata)
         """
         metadata = {
             "url": url,
             "timestamp": datetime.utcnow().isoformat(),
-            "method": "selenium" if use_selenium else "aiohttp"
+            "method": "selenium" if use_selenium else "aiohttp",
+            "retries": 0
         }
         
-        if use_selenium:
-            return await self._fetch_with_selenium(url, metadata)
-        else:
-            return await self._fetch_with_aiohttp(url, metadata)
+        for attempt in range(self.max_retries + 1):
+            try:
+                if use_selenium:
+                    return await self._fetch_with_selenium(url, metadata)
+                else:
+                    return await self._fetch_with_aiohttp(url, metadata)
+                    
+            except Exception as e:
+                metadata["retries"] = attempt
+                metadata["error"] = str(e)
+                
+                if attempt < self.max_retries:
+                    wait_time = 2 ** attempt  # Exponential backoff
+                    logger.warning(f"Attempt {attempt + 1} failed for {url}: {e}. Retrying in {wait_time}s...")
+                    await asyncio.sleep(wait_time)
+                else:
+                    logger.error(f"All {self.max_retries + 1} attempts failed for {url}: {e}")
+                    return "", 0, metadata
     
-    async def _fetch_with_aiohttp(self, url: str, metadata: Dict) -> Tuple[str, int, Dict]:
+    async def _fetch_with_aiohttp(self, url: str, metadata: Dict[str, Any]) -> Tuple[str, int, Dict[str, Any]]:
         """Fetch content using aiohttp."""
+        if not self.session:
+            raise RuntimeError("aiohttp session not initialized")
+        
         try:
             async with self.session.get(url) as response:
                 content = await response.text()
@@ -91,50 +168,52 @@ class WebScraper:
                     "status_code": response.status,
                     "content_type": response.headers.get("content-type", ""),
                     "content_length": len(content),
-                    "last_modified": response.headers.get("last-modified", "")
+                    "last_modified": response.headers.get("last-modified", ""),
+                    "final_url": str(response.url)
                 })
                 return content, response.status, metadata
+                
+        except asyncio.TimeoutError:
+            metadata["error"] = "Timeout"
+            return "", 408, metadata
         except Exception as e:
-            logger.error(f"Error fetching {url} with aiohttp: {e}")
             metadata["error"] = str(e)
             return "", 0, metadata
     
-    async def _fetch_with_selenium(self, url: str, metadata: Dict) -> Tuple[str, int, Dict]:
+    async def _fetch_with_selenium(self, url: str, metadata: Dict[str, Any]) -> Tuple[str, int, Dict[str, Any]]:
         """Fetch content using Selenium for JavaScript-heavy sites."""
-        if not self.driver:
-            self.driver = self._setup_selenium_driver()
-        
-        if not self.driver:
-            metadata["error"] = "Failed to initialize Selenium driver"
+        driver = await self.driver_pool.get_driver()
+        if not driver:
+            metadata["error"] = "No WebDriver available"
             return "", 0, metadata
         
         try:
-            self.driver.get(url)
+            driver.get(url)
             
             # Wait for page to load
-            WebDriverWait(self.driver, self.timeout).until(
+            WebDriverWait(driver, self.timeout).until(
                 EC.presence_of_element_located((By.TAG_NAME, "body"))
             )
             
-            content = self.driver.page_source
+            content = driver.page_source
             metadata.update({
                 "status_code": 200,
                 "content_length": len(content),
-                "current_url": self.driver.current_url
+                "current_url": driver.current_url
             })
             
             return content, 200, metadata
             
         except TimeoutException:
-            logger.error(f"Timeout loading {url} with Selenium")
             metadata["error"] = "Timeout"
             return "", 408, metadata
         except WebDriverException as e:
-            logger.error(f"Selenium error for {url}: {e}")
             metadata["error"] = str(e)
             return "", 0, metadata
+        finally:
+            await self.driver_pool.return_driver(driver)
     
-    def extract_form_links(self, content: str, base_url: str) -> List[Dict]:
+    def extract_form_links(self, content: str, base_url: str) -> List[Dict[str, Any]]:
         """Extract form/document links from page content."""
         soup = BeautifulSoup(content, 'html.parser')
         form_links = []
@@ -170,7 +249,7 @@ class WebScraper:
         """Calculate SHA256 hash of content for change detection."""
         return hashlib.sha256(content.encode('utf-8')).hexdigest()
     
-    def detect_changes(self, old_content: str, new_content: str) -> List[Dict]:
+    def detect_changes(self, old_content: str, new_content: str) -> List[Dict[str, Any]]:
         """Detect changes between old and new content."""
         changes = []
         
@@ -225,9 +304,10 @@ class AgencyMonitor:
     """High-level monitor for government agencies."""
     
     def __init__(self):
-        self.scraper = None
+        self.scraper: Optional[WebScraper] = None
+        self.monitoring_settings = get_monitoring_settings()
         
-    async def monitor_agency(self, agency_id: int) -> List[Dict]:
+    async def monitor_agency(self, agency_id: int) -> List[Dict[str, Any]]:
         """Monitor a specific agency for changes."""
         changes_detected = []
         
@@ -248,7 +328,10 @@ class AgencyMonitor:
             db.commit()
             
             try:
-                async with WebScraper() as scraper:
+                async with WebScraper(
+                    timeout=self.monitoring_settings.get('timeout_seconds', 30),
+                    max_retries=self.monitoring_settings.get('retry_attempts', 3)
+                ) as scraper:
                     self.scraper = scraper
                     
                     # Monitor each form for this agency
@@ -277,14 +360,18 @@ class AgencyMonitor:
         
         return changes_detected
     
-    async def _monitor_form(self, form: Form, db) -> List[Dict]:
+    async def _monitor_form(self, form: Form, db) -> List[Dict[str, Any]]:
         """Monitor a specific form for changes."""
         changes = []
         
         try:
+            # Determine if we need Selenium based on form characteristics
+            use_selenium = self._should_use_selenium(form)
+            
             # Fetch current content
             content, status_code, metadata = await self.scraper.fetch_page_content(
-                form.form_url or form.agency.base_url
+                form.form_url or form.agency.base_url,
+                use_selenium=use_selenium
             )
             
             if status_code != 200:
@@ -302,22 +389,23 @@ class AgencyMonitor:
             if last_run and last_run.content_hash:
                 # Compare with previous content
                 if last_run.content_hash != content_hash:
-                    # Content has changed - fetch previous content for detailed comparison
-                    # For now, we'll create a basic change record
+                    # Content has changed - create change record
                     change = FormChange(
                         form_id=form.id,
                         change_type="content",
                         change_description="Form content has been modified",
                         new_value=content_hash,
                         old_value=last_run.content_hash,
-                        change_hash=content_hash
+                        change_hash=content_hash,
+                        severity=self._determine_severity(form, content_hash, last_run.content_hash)
                     )
                     db.add(change)
                     changes.append({
                         'form_id': form.id,
                         'form_name': form.name,
                         'change_type': 'content',
-                        'description': 'Form content has been modified'
+                        'description': 'Form content has been modified',
+                        'severity': change.severity
                     })
             
             # Create new monitoring run for this form
@@ -327,7 +415,8 @@ class AgencyMonitor:
                 status="completed",
                 completed_at=datetime.utcnow(),
                 content_hash=content_hash,
-                http_status_code=status_code
+                http_status_code=status_code,
+                response_time_ms=int(metadata.get('response_time_ms', 0))
             )
             db.add(form_run)
             
@@ -347,7 +436,30 @@ class AgencyMonitor:
         
         return changes
     
-    async def monitor_all_agencies(self) -> Dict[str, List]:
+    def _should_use_selenium(self, form: Form) -> bool:
+        """Determine if Selenium should be used for this form."""
+        # Use Selenium for forms that likely have JavaScript
+        selenium_indicators = [
+            'portal', 'dynamic', 'javascript', 'spa', 'react', 'angular'
+        ]
+        
+        form_url = form.form_url or form.agency.base_url
+        form_name = form.name.lower()
+        
+        return any(indicator in form_url.lower() or indicator in form_name 
+                  for indicator in selenium_indicators)
+    
+    def _determine_severity(self, form: Form, new_hash: str, old_hash: str) -> str:
+        """Determine the severity of a change."""
+        # Simple heuristic - in production, use AI analysis
+        if form.name in ['WH-347', 'A1-131']:  # Critical federal forms
+            return 'high'
+        elif form.agency.agency_type == 'federal':
+            return 'medium'
+        else:
+            return 'low'
+    
+    async def monitor_all_agencies(self) -> Dict[str, List[Dict[str, Any]]]:
         """Monitor all active agencies."""
         results = {}
         

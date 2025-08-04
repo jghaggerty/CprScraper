@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  # Redis for caching and task queue
+  redis:
+    image: redis:7-alpine
+    container_name: payroll-monitor-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Main application
+  app:
+    build: .
+    container_name: payroll-monitor-app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./data/payroll_monitor.db
+      - REDIS_URL=redis://redis:6379/0
+      - LOG_LEVEL=INFO
+      - MONITORING_TIMEOUT=30
+      - RETRY_ATTEMPTS=3
+      # Add your email configuration here
+      - SMTP_SERVER=${SMTP_SERVER}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - FROM_EMAIL=${FROM_EMAIL}
+      - ALERT_EMAIL_1=${ALERT_EMAIL_1}
+      - ALERT_EMAIL_2=${ALERT_EMAIL_2}
+      # Optional configurations
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL:-}
+      - TEAMS_WEBHOOK_URL=${TEAMS_WEBHOOK_URL:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    volumes:
+      - app_data:/app/data
+      - app_logs:/app/logs
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Nginx reverse proxy (optional)
+  nginx:
+    image: nginx:alpine
+    container_name: payroll-monitor-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - app
+    restart: unless-stopped
+    profiles:
+      - production
+
+volumes:
+  redis_data:
+    driver: local
+  app_data:
+    driver: local
+  app_logs:
+    driver: local
+
+networks:
+  default:
+    name: payroll-monitor-network 
