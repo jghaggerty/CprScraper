@@ -1,0 +1,829 @@
+federal:
+  department_of_labor:
+    name: "U.S. Department of Labor"
+    base_url: "https://www.dol.gov"
+    forms:
+      - name: "WH-347"
+        title: "Statement of Compliance for Federal and Federally Assisted Construction Projects"
+        url: "https://www.dol.gov/agencies/whd/government-contracts/construction"
+        form_url: "https://www.dol.gov/sites/dolgov/files/WHD/legacy/files/wh347.pdf"
+        instructions_url: "https://www.dol.gov/sites/dolgov/files/WHD/legacy/files/wh347instr.pdf"
+        check_frequency: "daily"
+        contact_email: "WHDInfo@dol.gov"
+        last_updated: null
+    contact:
+      phone: "1-866-487-9243"
+      email: "WHDInfo@dol.gov"
+
+  general_services_administration:
+    name: "U.S. General Services Administration"
+    base_url: "https://www.gsa.gov"
+    forms:
+      - name: "GSA-347"
+        title: "GSA Certified Payroll Report"
+        url: "https://www.gsa.gov/reference/forms/gsa-347"
+        check_frequency: "weekly"
+        contact_email: "gsa.forms@gsa.gov"
+    contact:
+      phone: "1-844-472-7645"
+      email: "gsa.forms@gsa.gov"
+
+states:
+  alabama:
+    name: "Alabama Department of Labor"
+    abbreviation: "AL"
+    base_url: "https://www.labor.alabama.gov"
+    prevailing_wage_url: "https://www.labor.alabama.gov/docs/prevailing_wage/"
+    forms:
+      - name: "AL-PW-001"
+        title: "Alabama Certified Payroll Report"
+        url: "https://www.labor.alabama.gov/docs/prevailing_wage/"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@labor.alabama.gov"
+    contact:
+      phone: "(334) 242-8055"
+      email: "prevailingwage@labor.alabama.gov"
+
+  alaska:
+    name: "Alaska Department of Labor and Workforce Development"
+    abbreviation: "AK"
+    base_url: "https://labor.alaska.gov"
+    prevailing_wage_url: "https://labor.alaska.gov/lss/wagedb.htm"
+    forms:
+      - name: "AK-PW-001"
+        title: "Alaska Certified Payroll Report"
+        url: "https://labor.alaska.gov/lss/wagedb.htm"
+        check_frequency: "weekly"
+        contact_email: "labor.lss@alaska.gov"
+    contact:
+      phone: "(907) 465-2700"
+      email: "labor.lss@alaska.gov"
+
+  arizona:
+    name: "Arizona Department of Administration"
+    abbreviation: "AZ"
+    base_url: "https://azdoa.gov"
+    prevailing_wage_url: "https://azdoa.gov/procurement/procurement-policy/prevailing-wages"
+    forms:
+      - name: "AZ-PW-001"
+        title: "Arizona Certified Payroll Report"
+        url: "https://azdoa.gov/procurement/procurement-policy/prevailing-wages"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@azdoa.gov"
+    contact:
+      phone: "(602) 542-1500"
+      email: "prevailingwage@azdoa.gov"
+
+  arkansas:
+    name: "Arkansas Department of Labor and Licensing"
+    abbreviation: "AR"
+    base_url: "https://www.labor.arkansas.gov"
+    prevailing_wage_url: "https://www.labor.arkansas.gov/divisions/labor-standards/prevailing-wage/"
+    forms:
+      - name: "AR-PW-001"
+        title: "Arkansas Certified Payroll Report"
+        url: "https://www.labor.arkansas.gov/divisions/labor-standards/prevailing-wage/"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@arkansas.gov"
+    contact:
+      phone: "(501) 682-4500"
+      email: "prevailingwage@arkansas.gov"
+
+  california:
+    name: "California Department of Industrial Relations"
+    abbreviation: "CA"
+    base_url: "https://www.dir.ca.gov"
+    prevailing_wage_url: "https://www.dir.ca.gov/dlsr/PWD/"
+    forms:
+      - name: "A1-131"
+        title: "California Certified Payroll Report"
+        url: "https://www.dir.ca.gov/dlsr/PWD/A1-131.pdf"
+        form_url: "https://www.dir.ca.gov/dlsr/PWD/A1-131.pdf"
+        instructions_url: "https://www.dir.ca.gov/dlsr/PWD/A1-131-Instructions.pdf"
+        check_frequency: "daily"
+        contact_email: "askpublicworks@dir.ca.gov"
+        last_updated: null
+    contact:
+      phone: "(415) 703-5070"
+      email: "askpublicworks@dir.ca.gov"
+
+  colorado:
+    name: "Colorado Department of Labor and Employment"
+    abbreviation: "CO"
+    base_url: "https://cdle.colorado.gov"
+    prevailing_wage_url: "https://cdle.colorado.gov/wage-and-hour-law/prevailing-wage"
+    forms:
+      - name: "CO-PW-001"
+        title: "Colorado Certified Payroll Report"
+        url: "https://cdle.colorado.gov/wage-and-hour-law/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@state.co.us"
+    contact:
+      phone: "(303) 318-8441"
+      email: "prevailingwage@state.co.us"
+
+  connecticut:
+    name: "Connecticut Department of Labor"
+    abbreviation: "CT"
+    base_url: "https://www.ct.gov/dol"
+    prevailing_wage_url: "https://www.ct.gov/dol/cwp/view.asp?a=2348&q=334282"
+    forms:
+      - name: "CT-PW-001"
+        title: "Connecticut Certified Payroll Report"
+        url: "https://www.ct.gov/dol/cwp/view.asp?a=2348&q=334282"
+        check_frequency: "weekly"
+        contact_email: "dol.prevailingwage@ct.gov"
+    contact:
+      phone: "(860) 263-6000"
+      email: "dol.prevailingwage@ct.gov"
+
+  delaware:
+    name: "Delaware Department of Labor"
+    abbreviation: "DE"
+    base_url: "https://laborfiles.delaware.gov"
+    prevailing_wage_url: "https://laborfiles.delaware.gov/main/lp/prevailing/"
+    forms:
+      - name: "DE-PW-001"
+        title: "Delaware Certified Payroll Report"
+        url: "https://laborfiles.delaware.gov/main/lp/prevailing/"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@delaware.gov"
+    contact:
+      phone: "(302) 761-8200"
+      email: "prevailingwage@delaware.gov"
+
+  florida:
+    name: "Florida Department of Economic Opportunity"
+    abbreviation: "FL"
+    base_url: "https://www.floridajobs.org"
+    prevailing_wage_url: "https://www.floridajobs.org/office-directory/division-of-workforce-services/bureau-of-workforce-statistics-and-economic-research/labor-market-information/employment-and-wage-data/prevailing-wage-rates"
+    forms:
+      - name: "FL-PW-001"
+        title: "Florida Certified Payroll Report"
+        url: "https://www.floridajobs.org/office-directory/division-of-workforce-services/bureau-of-workforce-statistics-and-economic-research/labor-market-information/employment-and-wage-data/prevailing-wage-rates"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@deo.myflorida.com"
+    contact:
+      phone: "(850) 245-7105"
+      email: "prevailingwage@deo.myflorida.com"
+
+  georgia:
+    name: "Georgia Department of Labor"
+    abbreviation: "GA"
+    base_url: "https://dol.georgia.gov"
+    prevailing_wage_url: "https://dol.georgia.gov/prevailing-wage"
+    forms:
+      - name: "GA-PW-001"
+        title: "Georgia Certified Payroll Report"
+        url: "https://dol.georgia.gov/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@gdol.ga.gov"
+    contact:
+      phone: "(404) 232-3000"
+      email: "prevailingwage@gdol.ga.gov"
+
+  hawaii:
+    name: "Hawaii Department of Labor and Industrial Relations"
+    abbreviation: "HI"
+    base_url: "https://labor.hawaii.gov"
+    prevailing_wage_url: "https://labor.hawaii.gov/dcd/prevailing-wage/"
+    forms:
+      - name: "HI-PW-001"
+        title: "Hawaii Certified Payroll Report"
+        url: "https://labor.hawaii.gov/dcd/prevailing-wage/"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@hawaii.gov"
+    contact:
+      phone: "(808) 586-8844"
+      email: "prevailingwage@hawaii.gov"
+
+  idaho:
+    name: "Idaho Department of Labor"
+    abbreviation: "ID"
+    base_url: "https://labor.idaho.gov"
+    prevailing_wage_url: "https://labor.idaho.gov/prevailing-wage/"
+    forms:
+      - name: "ID-PW-001"
+        title: "Idaho Certified Payroll Report"
+        url: "https://labor.idaho.gov/prevailing-wage/"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@labor.idaho.gov"
+    contact:
+      phone: "(208) 332-3570"
+      email: "prevailingwage@labor.idaho.gov"
+
+  illinois:
+    name: "Illinois Department of Labor"
+    abbreviation: "IL"
+    base_url: "https://www2.illinois.gov/idol"
+    prevailing_wage_url: "https://www2.illinois.gov/idol/Laws-Rules/Pages/prevailing-wage.aspx"
+    forms:
+      - name: "IL-PW-001"
+        title: "Illinois Certified Payroll Report"
+        url: "https://www2.illinois.gov/idol/Laws-Rules/Pages/prevailing-wage.aspx"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@illinois.gov"
+    contact:
+      phone: "(312) 793-2800"
+      email: "prevailingwage@illinois.gov"
+
+  indiana:
+    name: "Indiana Department of Labor"
+    abbreviation: "IN"
+    base_url: "https://www.in.gov/dol"
+    prevailing_wage_url: "https://www.in.gov/dol/prevailing-wage/"
+    forms:
+      - name: "IN-PW-001"
+        title: "Indiana Certified Payroll Report"
+        url: "https://www.in.gov/dol/prevailing-wage/"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@dol.in.gov"
+    contact:
+      phone: "(317) 232-2655"
+      email: "prevailingwage@dol.in.gov"
+
+  iowa:
+    name: "Iowa Workforce Development"
+    abbreviation: "IA"
+    base_url: "https://www.iowaworkforcedevelopment.gov"
+    prevailing_wage_url: "https://www.iowaworkforcedevelopment.gov/prevailing-wage"
+    forms:
+      - name: "IA-PW-001"
+        title: "Iowa Certified Payroll Report"
+        url: "https://www.iowaworkforcedevelopment.gov/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@iwd.iowa.gov"
+    contact:
+      phone: "(515) 281-5387"
+      email: "prevailingwage@iwd.iowa.gov"
+
+  kansas:
+    name: "Kansas Department of Labor"
+    abbreviation: "KS"
+    base_url: "https://www.dol.ks.gov"
+    prevailing_wage_url: "https://www.dol.ks.gov/prevailing-wage"
+    forms:
+      - name: "KS-PW-001"
+        title: "Kansas Certified Payroll Report"
+        url: "https://www.dol.ks.gov/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@ks.gov"
+    contact:
+      phone: "(785) 296-5000"
+      email: "prevailingwage@ks.gov"
+
+  kentucky:
+    name: "Kentucky Labor Cabinet"
+    abbreviation: "KY"
+    base_url: "https://labor.ky.gov"
+    prevailing_wage_url: "https://labor.ky.gov/prevailing-wage/"
+    forms:
+      - name: "KY-PW-001"
+        title: "Kentucky Certified Payroll Report"
+        url: "https://labor.ky.gov/prevailing-wage/"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@ky.gov"
+    contact:
+      phone: "(502) 564-3070"
+      email: "prevailingwage@ky.gov"
+
+  louisiana:
+    name: "Louisiana Workforce Commission"
+    abbreviation: "LA"
+    base_url: "https://www.laworks.net"
+    prevailing_wage_url: "https://www.laworks.net/prevailing-wage"
+    forms:
+      - name: "LA-PW-001"
+        title: "Louisiana Certified Payroll Report"
+        url: "https://www.laworks.net/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@laworks.net"
+    contact:
+      phone: "(225) 342-3111"
+      email: "prevailingwage@laworks.net"
+
+  maine:
+    name: "Maine Department of Labor"
+    abbreviation: "ME"
+    base_url: "https://www.maine.gov/labor"
+    prevailing_wage_url: "https://www.maine.gov/labor/prevailing-wage/"
+    forms:
+      - name: "ME-PW-001"
+        title: "Maine Certified Payroll Report"
+        url: "https://www.maine.gov/labor/prevailing-wage/"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@maine.gov"
+    contact:
+      phone: "(207) 623-7900"
+      email: "prevailingwage@maine.gov"
+
+  maryland:
+    name: "Maryland Department of Labor"
+    abbreviation: "MD"
+    base_url: "https://www.dllr.state.md.us"
+    prevailing_wage_url: "https://www.dllr.state.md.us/prevailing-wage/"
+    forms:
+      - name: "MD-PW-001"
+        title: "Maryland Certified Payroll Report"
+        url: "https://www.dllr.state.md.us/prevailing-wage/"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@maryland.gov"
+    contact:
+      phone: "(410) 767-2400"
+      email: "prevailingwage@maryland.gov"
+
+  massachusetts:
+    name: "Massachusetts Department of Labor Standards"
+    abbreviation: "MA"
+    base_url: "https://www.mass.gov/orgs/department-of-labor-standards"
+    prevailing_wage_url: "https://www.mass.gov/prevailing-wage"
+    forms:
+      - name: "MA-PW-001"
+        title: "Massachusetts Certified Payroll Report"
+        url: "https://www.mass.gov/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@mass.gov"
+    contact:
+      phone: "(617) 626-6952"
+      email: "prevailingwage@mass.gov"
+
+  michigan:
+    name: "Michigan Department of Labor and Economic Opportunity"
+    abbreviation: "MI"
+    base_url: "https://www.michigan.gov/leo"
+    prevailing_wage_url: "https://www.michigan.gov/leo/bureaus-agencies/wage-hour/prevailing-wage"
+    forms:
+      - name: "MI-PW-001"
+        title: "Michigan Certified Payroll Report"
+        url: "https://www.michigan.gov/leo/bureaus-agencies/wage-hour/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@michigan.gov"
+    contact:
+      phone: "(517) 284-7800"
+      email: "prevailingwage@michigan.gov"
+
+  minnesota:
+    name: "Minnesota Department of Labor and Industry"
+    abbreviation: "MN"
+    base_url: "https://www.dli.mn.gov"
+    prevailing_wage_url: "https://www.dli.mn.gov/prevailing-wage"
+    forms:
+      - name: "MN-PW-001"
+        title: "Minnesota Certified Payroll Report"
+        url: "https://www.dli.mn.gov/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@state.mn.us"
+    contact:
+      phone: "(651) 284-5000"
+      email: "prevailingwage@state.mn.us"
+
+  mississippi:
+    name: "Mississippi Department of Employment Security"
+    abbreviation: "MS"
+    base_url: "https://mdes.ms.gov"
+    prevailing_wage_url: "https://mdes.ms.gov/prevailing-wage/"
+    forms:
+      - name: "MS-PW-001"
+        title: "Mississippi Certified Payroll Report"
+        url: "https://mdes.ms.gov/prevailing-wage/"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@mdes.ms.gov"
+    contact:
+      phone: "(601) 321-6000"
+      email: "prevailingwage@mdes.ms.gov"
+
+  missouri:
+    name: "Missouri Department of Labor and Industrial Relations"
+    abbreviation: "MO"
+    base_url: "https://labor.mo.gov"
+    prevailing_wage_url: "https://labor.mo.gov/prevailing-wage"
+    forms:
+      - name: "MO-PW-001"
+        title: "Missouri Certified Payroll Report"
+        url: "https://labor.mo.gov/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@labor.mo.gov"
+    contact:
+      phone: "(573) 751-9691"
+      email: "prevailingwage@labor.mo.gov"
+
+  montana:
+    name: "Montana Department of Labor and Industry"
+    abbreviation: "MT"
+    base_url: "https://dli.mt.gov"
+    prevailing_wage_url: "https://dli.mt.gov/prevailing-wage"
+    forms:
+      - name: "MT-PW-001"
+        title: "Montana Certified Payroll Report"
+        url: "https://dli.mt.gov/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@mt.gov"
+    contact:
+      phone: "(406) 841-2876"
+      email: "prevailingwage@mt.gov"
+
+  nebraska:
+    name: "Nebraska Department of Labor"
+    abbreviation: "NE"
+    base_url: "https://dol.nebraska.gov"
+    prevailing_wage_url: "https://dol.nebraska.gov/prevailing-wage"
+    forms:
+      - name: "NE-PW-001"
+        title: "Nebraska Certified Payroll Report"
+        url: "https://dol.nebraska.gov/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@nebraska.gov"
+    contact:
+      phone: "(402) 471-9000"
+      email: "prevailingwage@nebraska.gov"
+
+  nevada:
+    name: "Nevada Department of Employment, Training and Rehabilitation"
+    abbreviation: "NV"
+    base_url: "https://detr.nv.gov"
+    prevailing_wage_url: "https://detr.nv.gov/prevailing-wage/"
+    forms:
+      - name: "NV-PW-001"
+        title: "Nevada Certified Payroll Report"
+        url: "https://detr.nv.gov/prevailing-wage/"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@detr.nv.gov"
+    contact:
+      phone: "(775) 684-3849"
+      email: "prevailingwage@detr.nv.gov"
+
+  new_hampshire:
+    name: "New Hampshire Department of Labor"
+    abbreviation: "NH"
+    base_url: "https://www.nh.gov/labor"
+    prevailing_wage_url: "https://www.nh.gov/labor/prevailing-wage/"
+    forms:
+      - name: "NH-PW-001"
+        title: "New Hampshire Certified Payroll Report"
+        url: "https://www.nh.gov/labor/prevailing-wage/"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@nh.gov"
+    contact:
+      phone: "(603) 271-3176"
+      email: "prevailingwage@nh.gov"
+
+  new_jersey:
+    name: "New Jersey Department of Labor and Workforce Development"
+    abbreviation: "NJ"
+    base_url: "https://www.nj.gov/labor"
+    prevailing_wage_url: "https://www.nj.gov/labor/prevailing-wage/"
+    forms:
+      - name: "NJ-PW-001"
+        title: "New Jersey Certified Payroll Report"
+        url: "https://www.nj.gov/labor/prevailing-wage/"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@dol.nj.gov"
+    contact:
+      phone: "(609) 292-2300"
+      email: "prevailingwage@dol.nj.gov"
+
+  new_mexico:
+    name: "New Mexico Department of Workforce Solutions"
+    abbreviation: "NM"
+    base_url: "https://www.dws.state.nm.us"
+    prevailing_wage_url: "https://www.dws.state.nm.us/prevailing-wage"
+    forms:
+      - name: "NM-PW-001"
+        title: "New Mexico Certified Payroll Report"
+        url: "https://www.dws.state.nm.us/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@state.nm.us"
+    contact:
+      phone: "(505) 841-8400"
+      email: "prevailingwage@state.nm.us"
+
+  new_york:
+    name: "New York State Department of Labor"
+    abbreviation: "NY"
+    base_url: "https://dol.ny.gov"
+    prevailing_wage_url: "https://dol.ny.gov/prevailing-wage"
+    forms:
+      - name: "NY-PW-001"
+        title: "New York Certified Payroll Report"
+        url: "https://dol.ny.gov/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@labor.ny.gov"
+    contact:
+      phone: "(518) 457-9000"
+      email: "prevailingwage@labor.ny.gov"
+
+  north_carolina:
+    name: "North Carolina Department of Labor"
+    abbreviation: "NC"
+    base_url: "https://www.labor.nc.gov"
+    prevailing_wage_url: "https://www.labor.nc.gov/prevailing-wage"
+    forms:
+      - name: "NC-PW-001"
+        title: "North Carolina Certified Payroll Report"
+        url: "https://www.labor.nc.gov/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@labor.nc.gov"
+    contact:
+      phone: "(919) 807-2796"
+      email: "prevailingwage@labor.nc.gov"
+
+  north_dakota:
+    name: "North Dakota Department of Labor and Human Rights"
+    abbreviation: "ND"
+    base_url: "https://www.nd.gov/dol"
+    prevailing_wage_url: "https://www.nd.gov/dol/prevailing-wage"
+    forms:
+      - name: "ND-PW-001"
+        title: "North Dakota Certified Payroll Report"
+        url: "https://www.nd.gov/dol/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@nd.gov"
+    contact:
+      phone: "(701) 328-2660"
+      email: "prevailingwage@nd.gov"
+
+  ohio:
+    name: "Ohio Department of Commerce"
+    abbreviation: "OH"
+    base_url: "https://com.ohio.gov"
+    prevailing_wage_url: "https://com.ohio.gov/prevailing-wage"
+    forms:
+      - name: "OH-PW-001"
+        title: "Ohio Certified Payroll Report"
+        url: "https://com.ohio.gov/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@com.ohio.gov"
+    contact:
+      phone: "(614) 644-2239"
+      email: "prevailingwage@com.ohio.gov"
+
+  oklahoma:
+    name: "Oklahoma Department of Labor"
+    abbreviation: "OK"
+    base_url: "https://oklahoma.gov/odol"
+    prevailing_wage_url: "https://oklahoma.gov/odol/prevailing-wage"
+    forms:
+      - name: "OK-PW-001"
+        title: "Oklahoma Certified Payroll Report"
+        url: "https://oklahoma.gov/odol/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@ok.gov"
+    contact:
+      phone: "(405) 521-6100"
+      email: "prevailingwage@ok.gov"
+
+  oregon:
+    name: "Oregon Bureau of Labor and Industries"
+    abbreviation: "OR"
+    base_url: "https://www.oregon.gov/boli"
+    prevailing_wage_url: "https://www.oregon.gov/boli/prevailing-wage"
+    forms:
+      - name: "OR-PW-001"
+        title: "Oregon Certified Payroll Report"
+        url: "https://www.oregon.gov/boli/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@boli.state.or.us"
+    contact:
+      phone: "(971) 673-0761"
+      email: "prevailingwage@boli.state.or.us"
+
+  pennsylvania:
+    name: "Pennsylvania Department of Labor and Industry"
+    abbreviation: "PA"
+    base_url: "https://www.dli.pa.gov"
+    prevailing_wage_url: "https://www.dli.pa.gov/prevailing-wage"
+    forms:
+      - name: "PA-PW-001"
+        title: "Pennsylvania Certified Payroll Report"
+        url: "https://www.dli.pa.gov/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@pa.gov"
+    contact:
+      phone: "(717) 787-5279"
+      email: "prevailingwage@pa.gov"
+
+  rhode_island:
+    name: "Rhode Island Department of Labor and Training"
+    abbreviation: "RI"
+    base_url: "https://dlt.ri.gov"
+    prevailing_wage_url: "https://dlt.ri.gov/prevailing-wage"
+    forms:
+      - name: "RI-PW-001"
+        title: "Rhode Island Certified Payroll Report"
+        url: "https://dlt.ri.gov/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@dlt.ri.gov"
+    contact:
+      phone: "(401) 462-8000"
+      email: "prevailingwage@dlt.ri.gov"
+
+  south_carolina:
+    name: "South Carolina Department of Labor, Licensing and Regulation"
+    abbreviation: "SC"
+    base_url: "https://www.llr.sc.gov"
+    prevailing_wage_url: "https://www.llr.sc.gov/prevailing-wage"
+    forms:
+      - name: "SC-PW-001"
+        title: "South Carolina Certified Payroll Report"
+        url: "https://www.llr.sc.gov/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@llr.sc.gov"
+    contact:
+      phone: "(803) 896-4300"
+      email: "prevailingwage@llr.sc.gov"
+
+  south_dakota:
+    name: "South Dakota Department of Labor and Regulation"
+    abbreviation: "SD"
+    base_url: "https://dlr.sd.gov"
+    prevailing_wage_url: "https://dlr.sd.gov/prevailing-wage"
+    forms:
+      - name: "SD-PW-001"
+        title: "South Dakota Certified Payroll Report"
+        url: "https://dlr.sd.gov/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@state.sd.us"
+    contact:
+      phone: "(605) 773-3101"
+      email: "prevailingwage@state.sd.us"
+
+  tennessee:
+    name: "Tennessee Department of Labor and Workforce Development"
+    abbreviation: "TN"
+    base_url: "https://www.tn.gov/workforce"
+    prevailing_wage_url: "https://www.tn.gov/workforce/prevailing-wage"
+    forms:
+      - name: "TN-PW-001"
+        title: "Tennessee Certified Payroll Report"
+        url: "https://www.tn.gov/workforce/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@tn.gov"
+    contact:
+      phone: "(615) 741-6642"
+      email: "prevailingwage@tn.gov"
+
+  texas:
+    name: "Texas Workforce Commission"
+    abbreviation: "TX"
+    base_url: "https://www.twc.texas.gov"
+    prevailing_wage_url: "https://www.twc.texas.gov/prevailing-wage"
+    forms:
+      - name: "TX-PW-001"
+        title: "Texas Certified Payroll Report"
+        url: "https://www.twc.texas.gov/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@twc.texas.gov"
+    contact:
+      phone: "(512) 463-2222"
+      email: "prevailingwage@twc.texas.gov"
+
+  utah:
+    name: "Utah Labor Commission"
+    abbreviation: "UT"
+    base_url: "https://laborcommission.utah.gov"
+    prevailing_wage_url: "https://laborcommission.utah.gov/prevailing-wage"
+    forms:
+      - name: "UT-PW-001"
+        title: "Utah Certified Payroll Report"
+        url: "https://laborcommission.utah.gov/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@utah.gov"
+    contact:
+      phone: "(801) 530-6800"
+      email: "prevailingwage@utah.gov"
+
+  vermont:
+    name: "Vermont Department of Labor"
+    abbreviation: "VT"
+    base_url: "https://labor.vermont.gov"
+    prevailing_wage_url: "https://labor.vermont.gov/prevailing-wage"
+    forms:
+      - name: "VT-PW-001"
+        title: "Vermont Certified Payroll Report"
+        url: "https://labor.vermont.gov/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@vermont.gov"
+    contact:
+      phone: "(802) 828-4000"
+      email: "prevailingwage@vermont.gov"
+
+  virginia:
+    name: "Virginia Department of Labor and Industry"
+    abbreviation: "VA"
+    base_url: "https://www.doli.virginia.gov"
+    prevailing_wage_url: "https://www.doli.virginia.gov/prevailing-wage"
+    forms:
+      - name: "VA-PW-001"
+        title: "Virginia Certified Payroll Report"
+        url: "https://www.doli.virginia.gov/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@doli.virginia.gov"
+    contact:
+      phone: "(804) 371-2327"
+      email: "prevailingwage@doli.virginia.gov"
+
+  washington:
+    name: "Washington State Department of Labor and Industries"
+    abbreviation: "WA"
+    base_url: "https://lni.wa.gov"
+    prevailing_wage_url: "https://lni.wa.gov/prevailing-wage"
+    forms:
+      - name: "WA-PW-001"
+        title: "Washington Certified Payroll Report"
+        url: "https://lni.wa.gov/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@lni.wa.gov"
+    contact:
+      phone: "(360) 902-5800"
+      email: "prevailingwage@lni.wa.gov"
+
+  west_virginia:
+    name: "West Virginia Division of Labor"
+    abbreviation: "WV"
+    base_url: "https://labor.wv.gov"
+    prevailing_wage_url: "https://labor.wv.gov/prevailing-wage"
+    forms:
+      - name: "WV-PW-001"
+        title: "West Virginia Certified Payroll Report"
+        url: "https://labor.wv.gov/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@wv.gov"
+    contact:
+      phone: "(304) 558-7890"
+      email: "prevailingwage@wv.gov"
+
+  wisconsin:
+    name: "Wisconsin Department of Workforce Development"
+    abbreviation: "WI"
+    base_url: "https://dwd.wisconsin.gov"
+    prevailing_wage_url: "https://dwd.wisconsin.gov/prevailing-wage"
+    forms:
+      - name: "WI-PW-001"
+        title: "Wisconsin Certified Payroll Report"
+        url: "https://dwd.wisconsin.gov/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@dwd.wisconsin.gov"
+    contact:
+      phone: "(608) 266-3131"
+      email: "prevailingwage@dwd.wisconsin.gov"
+
+  wyoming:
+    name: "Wyoming Department of Workforce Services"
+    abbreviation: "WY"
+    base_url: "https://wyomingworkforce.org"
+    prevailing_wage_url: "https://wyomingworkforce.org/prevailing-wage"
+    forms:
+      - name: "WY-PW-001"
+        title: "Wyoming Certified Payroll Report"
+        url: "https://wyomingworkforce.org/prevailing-wage"
+        check_frequency: "weekly"
+        contact_email: "prevailingwage@wyo.gov"
+    contact:
+      phone: "(307) 777-7676"
+      email: "prevailingwage@wyo.gov"
+
+monitoring_settings:
+  default_check_frequency: "weekly"
+  retry_attempts: 3
+  timeout_seconds: 30
+  user_agent: "PayrollMonitor/1.0 (Government Forms Monitoring)"
+  notification_delay_minutes: 5
+  backup_frequency: "daily"
+  max_concurrent_agencies: 10
+  max_concurrent_forms: 25
+  batch_processing_enabled: true
+  health_check_interval_minutes: 15
+  
+notification_settings:
+  email:
+    enabled: true
+    smtp_server: "${SMTP_SERVER}"
+    smtp_port: 587
+    username: "${SMTP_USERNAME}"
+    password: "${SMTP_PASSWORD}"
+    from_address: "${FROM_EMAIL}"
+    to_addresses:
+      - "${ALERT_EMAIL_1}"
+      - "${ALERT_EMAIL_2}"
+  
+  slack:
+    enabled: false
+    webhook_url: "${SLACK_WEBHOOK_URL}"
+    channel: "#payroll-alerts"
+  
+  teams:
+    enabled: false
+    webhook_url: "${TEAMS_WEBHOOK_URL}"
+
+coverage_settings:
+  total_states: 50
+  total_federal_agencies: 2
+  total_forms: 52
+  coverage_status: "complete"
+  last_updated: "2024-01-01"
+  monitoring_coverage:
+    federal: true
+    all_states: true
+    territories: false
+    counties: false
+    cities: false 

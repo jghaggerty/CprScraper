@@ -21,6 +21,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from ..database.connection import get_db
 from ..database.models import Agency, Form, FormChange, MonitoringRun
 from ..utils.config_loader import load_agency_config, get_monitoring_settings
+from .error_handler import get_error_handler, create_retry_config, ErrorContext
 
 logger = logging.getLogger(__name__)
 
@@ -105,6 +106,16 @@ class WebScraper:
         self.session: Optional[aiohttp.ClientSession] = None
         self.driver_pool = WebDriverPool()
         
+        # Initialize enhanced error handling
+        retry_config = create_retry_config(
+            max_retries=max_retries,
+            base_delay=1.0,
+            max_delay=60.0,
+            circuit_breaker_threshold=5,
+            circuit_breaker_timeout=300.0
+        )
+        self.error_handler = get_error_handler(retry_config)
+        
     async def __aenter__(self):
         """Async context manager entry."""
         self.session = aiohttp.ClientSession(
@@ -119,9 +130,17 @@ class WebScraper:
             await self.session.close()
         await self.driver_pool.cleanup()
     
+    async def get_error_statistics(self) -> Dict[str, Any]:
+        """Get error handling statistics."""
+        return await self.error_handler.get_error_stats()
+    
+    async def reset_error_statistics(self) -> None:
+        """Reset error handling statistics."""
+        await self.error_handler.reset_stats()
+    
     async def fetch_page_content(self, url: str, use_selenium: bool = False) -> Tuple[str, int, Dict[str, Any]]:
         """
-        Fetch page content using either aiohttp or Selenium with retry logic.
+        Fetch page content using either aiohttp or Selenium with enhanced error handling.
         
         Args:
             url: URL to fetch
@@ -134,30 +153,23 @@ class WebScraper:
             "url": url,
             "timestamp": datetime.utcnow().isoformat(),
             "method": "selenium" if use_selenium else "aiohttp",
-            "retries": 0
+            "retries": 0,
+            "error_handling": "enhanced"
         }
         
-        for attempt in range(self.max_retries + 1):
-            try:
-                if use_selenium:
-                    return await self._fetch_with_selenium(url, metadata)
-                else:
-                    return await self._fetch_with_aiohttp(url, metadata)
-                    
-            except Exception as e:
-                metadata["retries"] = attempt
-                metadata["error"] = str(e)
+        try:
+            if use_selenium:
+                return await self._fetch_with_selenium_enhanced(url, metadata)
+            else:
+                return await self._fetch_with_aiohttp_enhanced(url, metadata)
                 
-                if attempt < self.max_retries:
-                    wait_time = 2 ** attempt  # Exponential backoff
-                    logger.warning(f"Attempt {attempt + 1} failed for {url}: {e}. Retrying in {wait_time}s...")
-                    await asyncio.sleep(wait_time)
-                else:
-                    logger.error(f"All {self.max_retries + 1} attempts failed for {url}: {e}")
-                    return "", 0, metadata
+        except Exception as e:
+            metadata["error"] = str(e)
+            logger.error(f"Enhanced error handling failed for {url}: {e}")
+            return "", 0, metadata
     
     async def _fetch_with_aiohttp(self, url: str, metadata: Dict[str, Any]) -> Tuple[str, int, Dict[str, Any]]:
-        """Fetch content using aiohttp."""
+        """Fetch content using aiohttp (legacy method)."""
         if not self.session:
             raise RuntimeError("aiohttp session not initialized")
         
@@ -180,8 +192,41 @@ class WebScraper:
             metadata["error"] = str(e)
             return "", 0, metadata
     
+    async def _fetch_with_aiohttp_enhanced(self, url: str, metadata: Dict[str, Any]) -> Tuple[str, int, Dict[str, Any]]:
+        """Fetch content using aiohttp with enhanced error handling."""
+        if not self.session:
+            raise RuntimeError("aiohttp session not initialized")
+        
+        try:
+            # Use enhanced error handler for HTTP requests
+            response, error_context = await self.error_handler.handle_http_request(
+                self.session, url, timeout=self.timeout
+            )
+            
+            content = await response.text()
+            metadata.update({
+                "status_code": response.status,
+                "content_type": response.headers.get("content-type", ""),
+                "content_length": len(content),
+                "last_modified": response.headers.get("last-modified", ""),
+                "final_url": str(response.url),
+                "response_time": error_context.response_time,
+                "error_context": {
+                    "attempt_number": error_context.attempt_number,
+                    "total_attempts": error_context.total_attempts,
+                    "error_type": error_context.error_type.value if error_context.error_type else None,
+                    "error_message": error_context.error_message
+                }
+            })
+            return content, response.status, metadata
+            
+        except Exception as e:
+            metadata["error"] = str(e)
+            metadata["error_handling_failed"] = True
+            return "", 0, metadata
+    
     async def _fetch_with_selenium(self, url: str, metadata: Dict[str, Any]) -> Tuple[str, int, Dict[str, Any]]:
-        """Fetch content using Selenium for JavaScript-heavy sites."""
+        """Fetch content using Selenium for JavaScript-heavy sites (legacy method)."""
         driver = await self.driver_pool.get_driver()
         if not driver:
             metadata["error"] = "No WebDriver available"
@@ -209,6 +254,48 @@ class WebScraper:
             return "", 408, metadata
         except WebDriverException as e:
             metadata["error"] = str(e)
+            return "", 0, metadata
+        finally:
+            await self.driver_pool.return_driver(driver)
+    
+    async def _fetch_with_selenium_enhanced(self, url: str, metadata: Dict[str, Any]) -> Tuple[str, int, Dict[str, Any]]:
+        """Fetch content using Selenium with enhanced error handling."""
+        driver = await self.driver_pool.get_driver()
+        if not driver:
+            metadata["error"] = "No WebDriver available"
+            return "", 0, metadata
+        
+        try:
+            # Use enhanced error handler for Selenium operations
+            def selenium_operation():
+                driver.get(url)
+                WebDriverWait(driver, self.timeout).until(
+                    EC.presence_of_element_located((By.TAG_NAME, "body"))
+                )
+                return driver.page_source
+            
+            content, error_context = await self.error_handler.handle_selenium_operation(
+                driver, selenium_operation, url
+            )
+            
+            metadata.update({
+                "status_code": 200,
+                "content_length": len(content),
+                "current_url": driver.current_url,
+                "response_time": error_context.response_time,
+                "error_context": {
+                    "attempt_number": error_context.attempt_number,
+                    "total_attempts": error_context.total_attempts,
+                    "error_type": error_context.error_type.value if error_context.error_type else None,
+                    "error_message": error_context.error_message
+                }
+            })
+            
+            return content, 200, metadata
+            
+        except Exception as e:
+            metadata["error"] = str(e)
+            metadata["error_handling_failed"] = True
             return "", 0, metadata
         finally:
             await self.driver_pool.return_driver(driver)
