@@ -12,6 +12,7 @@ from ..database.models import Agency, Form, FormChange, MonitoringRun, Notificat
 from ..scheduler.monitoring_scheduler import get_scheduler
 from ..notifications.notifier import NotificationManager
 from ..utils.config_loader import load_agency_config, get_all_forms
+from .analysis import router as analysis_router
 
 # Initialize logging
 logging.basicConfig(level=logging.INFO)
@@ -38,6 +39,9 @@ app.add_middleware(
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Include analysis router
+app.include_router(analysis_router)
 
 # Pydantic models for API requests/responses
 class AgencyResponse(BaseModel):

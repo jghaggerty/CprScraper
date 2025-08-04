@@ -72,6 +72,16 @@ class FormChange(Base):
     status = Column(String(20), default="detected")  # detected, notified, evaluated, in_development, qa, eut, released
     impact_assessment = Column(JSON, nullable=True)  # JSON field for impact data
     
+    # AI Analysis Fields
+    ai_confidence_score = Column(Integer, nullable=True)  # 0-100 confidence percentage
+    ai_change_category = Column(String(50), nullable=True)  # 'form_update', 'requirement_change', 'logic_modification'
+    ai_severity_score = Column(Integer, nullable=True)  # 0-100 severity score from AI
+    ai_reasoning = Column(Text, nullable=True)  # LLM explanation of the analysis
+    ai_semantic_similarity = Column(Integer, nullable=True)  # 0-100 semantic similarity score
+    ai_analysis_metadata = Column(JSON, nullable=True)  # Model versions, processing time, etc.
+    ai_analysis_timestamp = Column(DateTime, nullable=True)  # When AI analysis was performed
+    is_cosmetic_change = Column(Boolean, default=False)  # AI determination if change is cosmetic
+    
     # Relationships
     form = relationship("Form", back_populates="changes")
     notifications = relationship("Notification", back_populates="form_change")
