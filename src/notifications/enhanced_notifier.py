@@ -20,6 +20,7 @@ from ..database.models import (
 )
 from ..auth.user_service import UserService
 from .notifier import NotificationTemplate, EmailNotifier, SlackNotifier, TeamsNotifier
+from .email_templates import EnhancedEmailTemplates
 from ..utils.config_loader import get_notification_settings
 
 logger = logging.getLogger(__name__)
@@ -30,137 +31,13 @@ class RoleBasedNotificationTemplate:
     
     def __init__(self):
         self.user_service = UserService()
+        self.enhanced_templates = EnhancedEmailTemplates()
         
         # Role-specific templates
-        self.product_manager_template = NotificationTemplate().email_template
-        self.business_analyst_template = self._create_business_analyst_template()
+        self.product_manager_template = self.enhanced_templates.get_template('product_manager')
+        self.business_analyst_template = self.enhanced_templates.get_template('business_analyst')
         
-    def _create_business_analyst_template(self):
-        """Create a template specifically for Business Analysts with more technical details."""
-        from jinja2 import Template
-        
-        return Template("""
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .header { background-color: #f4f4f4; padding: 20px; border-radius: 5px; }
-        .content { margin: 20px 0; }
-        .change-details { background-color: #fff3cd; padding: 15px; border-radius: 5px; margin: 10px 0; }
-        .impact-section { background-color: #e7f3ff; padding: 15px; border-radius: 5px; margin: 10px 0; }
-        .technical-details { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0; }
-        .action-items { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0; }
-        .footer { margin-top: 30px; font-size: 12px; color: #666; }
-        .urgent { border-left: 4px solid #dc3545; }
-        .medium { border-left: 4px solid #ffc107; }
-        .low { border-left: 4px solid #28a745; }
-        .technical-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-        .technical-table th, .technical-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        .technical-table th { background-color: #f2f2f2; }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h2>🔍 Certified Payroll Report Change Alert - Business Analysis</h2>
-        <p><strong>Detection Time:</strong> {{ detected_at }}</p>
-        <p><strong>Severity:</strong> {{ severity.upper() }}</p>
-        <p><strong>AI Confidence Score:</strong> {{ ai_confidence_score }}%</p>
-    </div>
-    
-    <div class="content">
-        <div class="change-details {{ severity }}">
-            <h3>Change Details</h3>
-            <p><strong>Agency:</strong> {{ agency_name }}</p>
-            <p><strong>Report Name/ID:</strong> {{ form_name }}</p>
-            <p><strong>CPR Report ID:</strong> {{ cpr_report_id or "N/A" }}</p>
-            <p><strong>Change Type:</strong> {{ change_type }}</p>
-            <p><strong>Description:</strong> {{ change_description }}</p>
-            {% if effective_date %}
-            <p><strong>Effective Date:</strong> {{ effective_date }}</p>
-            {% endif %}
-            {% if ai_change_category %}
-            <p><strong>AI Change Category:</strong> {{ ai_change_category }}</p>
-            {% endif %}
-        </div>
-        
-        <div class="technical-details">
-            <h3>🔧 Technical Analysis</h3>
-            <table class="technical-table">
-                <tr>
-                    <th>Field</th>
-                    <th>Old Value</th>
-                    <th>New Value</th>
-                </tr>
-                {% if old_value %}
-                <tr>
-                    <td>Content Hash</td>
-                    <td>{{ old_value[:20] }}...</td>
-                    <td>{{ new_value[:20] }}...</td>
-                </tr>
-                {% endif %}
-                <tr>
-                    <td>AI Severity Score</td>
-                    <td colspan="2">{{ ai_severity_score }}/100</td>
-                </tr>
-                <tr>
-                    <td>Semantic Similarity</td>
-                    <td colspan="2">{{ ai_semantic_similarity }}%</td>
-                </tr>
-                <tr>
-                    <td>Cosmetic Change</td>
-                    <td colspan="2">{{ "Yes" if is_cosmetic_change else "No" }}</td>
-                </tr>
-            </table>
-            
-            {% if ai_reasoning %}
-            <h4>AI Reasoning:</h4>
-            <p>{{ ai_reasoning }}</p>
-            {% endif %}
-        </div>
-        
-        <div class="impact-section">
-            <h3>📊 Impact Assessment</h3>
-            <p><strong>Clients Impacted:</strong> {{ clients_impacted }}</p>
-            <p><strong>ICP Segment Percentage:</strong> {{ icp_percentage }}%</p>
-            {% if impact_details %}
-            <ul>
-                {% for detail in impact_details %}
-                <li>{{ detail }}</li>
-                {% endfor %}
-            </ul>
-            {% endif %}
-        </div>
-        
-        <div class="action-items">
-            <h3>📋 Analysis Requirements</h3>
-            <h4>Required Analysis:</h4>
-            <ul>
-                <li>Review AI analysis for accuracy and completeness</li>
-                <li>Assess technical impact on existing integrations</li>
-                <li>Evaluate data mapping requirements</li>
-                <li>Identify potential compliance risks</li>
-                <li>Prepare detailed impact report for Product Manager</li>
-            </ul>
-            
-            <h4>Resources:</h4>
-            <ul>
-                {% if form_url %}<li><a href="{{ form_url }}">Report Specifications</a></li>{% endif %}
-                {% if instructions_url %}<li><a href="{{ instructions_url }}">Report Instructions</a></li>{% endif %}
-                <li><strong>Agency Contact:</strong> {{ agency_contact_email }} | {{ agency_contact_phone }}</li>
-                {% if field_mapping_current %}<li>Report field mapping (current): Available in CPR</li>{% endif %}
-                {% if field_mapping_updated %}<li>Report field mapping (updated): Available in CPR</li>{% endif %}
-            </ul>
-        </div>
-    </div>
-    
-    <div class="footer">
-        <p>This alert was generated automatically by the Payroll Monitoring System.</p>
-        <p>For questions or support, please contact your development team.</p>
-    </div>
-</body>
-</html>
-        """)
+
     
     def get_template_for_role(self, role_name: str):
         """Get the appropriate template for a user role."""
@@ -236,6 +113,8 @@ class EnhancedNotificationManager:
             # Prepare base notification data
             base_change_data = {
                 'detected_at': form_change.detected_at.strftime('%Y-%m-%d %H:%M:%S UTC'),
+                'generated_at': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC'),
+                'change_id': form_change.id,
                 'severity': form_change.severity,
                 'agency_name': agency.name,
                 'form_name': form.name,
