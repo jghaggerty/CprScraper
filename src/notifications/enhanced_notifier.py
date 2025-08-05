@@ -21,6 +21,7 @@ from ..database.models import (
 from ..auth.user_service import UserService
 from .notifier import NotificationTemplate, EmailNotifier, SlackNotifier, TeamsNotifier
 from .email_templates import EnhancedEmailTemplates
+from .preference_manager import EnhancedNotificationPreferenceManager, should_send_notification
 from ..utils.config_loader import get_notification_settings
 
 logger = logging.getLogger(__name__)
@@ -55,6 +56,7 @@ class EnhancedNotificationManager:
         self.notifiers = self._setup_notifiers()
         self.user_service = UserService()
         self.template_generator = RoleBasedNotificationTemplate()
+        self.preference_manager = EnhancedNotificationPreferenceManager()
     
     def _setup_notifiers(self) -> Dict:
         """Set up notification services based on configuration."""
@@ -181,11 +183,8 @@ class EnhancedNotificationManager:
         for user in users:
             user_results = {}
             
-            # Get user's notification preferences
-            preferences = self.user_service.get_user_notification_preferences(user.id)
-            
-            # Check if user should receive this notification based on severity
-            should_notify = self._should_notify_user(user, preferences, form_change.severity)
+            # Check if user should receive this notification based on preferences
+            should_notify = should_send_notification(user.id, 'email', form_change.severity, form_change.detected_at)
             
             if not should_notify:
                 logger.info(f"User {user.username} ({role_name}) excluded from notification based on preferences")
@@ -195,6 +194,9 @@ class EnhancedNotificationManager:
             change_data = base_change_data.copy()
             change_data['user_name'] = f"{user.first_name} {user.last_name}"
             change_data['user_role'] = role_name
+            
+            # Get user's notification preferences
+            preferences = self.preference_manager.get_user_notification_preferences(user.id)
             
             # Send notifications through user's preferred channels
             for pref in preferences:
@@ -246,23 +248,7 @@ class EnhancedNotificationManager:
         
         return results
     
-    def _should_notify_user(self, user: User, preferences: List[Dict], change_severity: str) -> bool:
-        """Determine if a user should receive a notification based on their preferences."""
-        # If user has no preferences, default to receiving all notifications
-        if not preferences:
-            return True
-        
-        # Check if user has any enabled preferences for this severity
-        for pref in preferences:
-            if not pref['is_enabled']:
-                continue
-            
-            # If preference is for 'all' severities or matches current severity
-            if (pref['change_severity'] == 'all' or 
-                pref['change_severity'] == change_severity):
-                return True
-        
-        return False
+
     
     async def _send_custom_email_notification(self, user: User, change_data: Dict, 
                                             html_content: str) -> bool:
