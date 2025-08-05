@@ -8,6 +8,8 @@
 - `src/api/dashboard.test.py` - Unit tests for dashboard API
 - `src/reporting/weekly_reports.py` - Weekly summary report generation service
 - `src/reporting/weekly_reports.test.py` - Unit tests for weekly reports
+- `src/reporting/report_templates.py` - Consolidated report templates for different audiences and formats
+- `src/reporting/report_templates.test.py` - Unit tests for report templates
 - `src/notifications/enhanced_notifier.py` - Enhanced notification system with role-based alerts
 - `src/notifications/enhanced_notifier.test.py` - Unit tests for enhanced notifications
 - `src/notifications/delivery_tracker.py` - Notification delivery tracking and retry mechanisms
@@ -87,7 +89,7 @@
 
 - [ ] 4.0 Create Weekly Summary Reporting
   - [x] 4.1 Implement automated weekly report generation service
-  - [ ] 4.2 Create consolidated report templates with all compliance changes
+  - [x] 4.2 Create consolidated report templates with all compliance changes
   - [ ] 4.3 Add report distribution system for Product Managers and Business Analysts
   - [ ] 4.4 Implement report customization options (date ranges, states, form types)
   - [ ] 4.5 Add report scheduling and automated delivery
