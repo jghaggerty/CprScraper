@@ -2,7 +2,24 @@
 Unit tests for enhanced email notification templates.
 """
 
-import pytest
+try:
+    import pytest
+except ImportError:
+    print("ERROR: pytest is not installed.")
+    print("\n=== QUICK FIX ===")
+    print("Run the fix script: fix_pytest_import.bat")
+    print("\n=== MANUAL INSTALLATION ===")
+    print("1. Install Python from https://www.python.org/downloads/")
+    print("   (Make sure to check 'Add Python to PATH' during installation)")
+    print("2. Install pytest:")
+    print("   pip install pytest")
+    print("   python -m pip install pytest")
+    print("   py -m pip install pytest")
+    print("\n=== ALTERNATIVE ===")
+    print("Use the project setup script: python setup_dev_environment.py")
+    print("\nFor detailed instructions, see: FIX_PYTEST_IMPORT.md")
+    raise
+
 from datetime import datetime
 from typing import Dict, Any
 

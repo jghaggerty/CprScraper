@@ -16,6 +16,11 @@ from .analysis import router as analysis_router
 from .dashboard import router as dashboard_router
 from .realtime import router as realtime_router
 from .auth import router as auth_router
+from .notification_channels import router as notification_channels_router
+from .notification_tracking import router as notification_tracking_router
+from .notification_management import router as notification_management_router
+from .notification_testing import router as notification_testing_router
+from .notification_batching_throttling import router as notification_batching_throttling_router
 
 # Initialize logging
 logging.basicConfig(level=logging.INFO)
@@ -48,6 +53,11 @@ app.include_router(analysis_router)
 app.include_router(dashboard_router)
 app.include_router(realtime_router)
 app.include_router(auth_router)
+app.include_router(notification_channels_router)
+app.include_router(notification_tracking_router)
+app.include_router(notification_management_router)
+app.include_router(notification_testing_router)
+app.include_router(notification_batching_throttling_router)
 
 # Pydantic models for API requests/responses
 class AgencyResponse(BaseModel):

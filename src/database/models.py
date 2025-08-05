@@ -119,9 +119,13 @@ class Notification(Base):
     subject = Column(String(500), nullable=True)
     message = Column(Text, nullable=False)
     sent_at = Column(DateTime, default=func.now())
-    status = Column(String(20), default="pending")  # pending, sent, failed, bounced
+    status = Column(String(20), default="pending")  # pending, sending, delivered, failed, bounced, retrying, expired, cancelled
     error_message = Column(Text, nullable=True)
     retry_count = Column(Integer, default=0)
+    delivery_time = Column(Integer, nullable=True)  # Delivery time in seconds
+    response_data = Column(JSON, nullable=True)  # Response data from delivery service
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     
     # Relationships
     form_change = relationship("FormChange", back_populates="notifications")

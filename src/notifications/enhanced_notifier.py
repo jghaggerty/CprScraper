@@ -22,6 +22,8 @@ from ..auth.user_service import UserService
 from .notifier import NotificationTemplate, EmailNotifier, SlackNotifier, TeamsNotifier
 from .email_templates import EnhancedEmailTemplates
 from .preference_manager import EnhancedNotificationPreferenceManager, should_send_notification
+from .channel_integration import ChannelIntegrationManager, NotificationResult
+from .delivery_tracker import NotificationDeliveryTracker, RetryConfig, DeliveryStatus
 from ..utils.config_loader import get_notification_settings
 
 logger = logging.getLogger(__name__)
@@ -51,12 +53,14 @@ class RoleBasedNotificationTemplate:
 class EnhancedNotificationManager:
     """Enhanced notification management with role-based delivery."""
     
-    def __init__(self):
+    def __init__(self, retry_config: Optional[RetryConfig] = None):
         self.notification_config = get_notification_settings()
         self.notifiers = self._setup_notifiers()
         self.user_service = UserService()
         self.template_generator = RoleBasedNotificationTemplate()
         self.preference_manager = EnhancedNotificationPreferenceManager()
+        self.channel_manager = ChannelIntegrationManager()
+        self.delivery_tracker = NotificationDeliveryTracker(retry_config)
     
     def _setup_notifiers(self) -> Dict:
         """Set up notification services based on configuration."""
@@ -174,7 +178,7 @@ class EnhancedNotificationManager:
     
     async def _send_notifications_to_role(self, role_name: str, form_change: FormChange, 
                                          base_change_data: Dict, db: Session) -> Dict[str, Dict]:
-        """Send notifications to users with a specific role."""
+        """Send notifications to users with a specific role using enhanced channel integration."""
         results = {}
         
         # Get users with this role
@@ -183,70 +187,109 @@ class EnhancedNotificationManager:
         for user in users:
             user_results = {}
             
-            # Check if user should receive this notification based on preferences
-            should_notify = should_send_notification(user.id, 'email', form_change.severity, form_change.detected_at)
-            
-            if not should_notify:
-                logger.info(f"User {user.username} ({role_name}) excluded from notification based on preferences")
-                continue
-            
             # Prepare role-specific notification data
             change_data = base_change_data.copy()
             change_data['user_name'] = f"{user.first_name} {user.last_name}"
             change_data['user_role'] = role_name
+            change_data['form_change_id'] = form_change.id
             
             # Get user's notification preferences
             preferences = self.preference_manager.get_user_notification_preferences(user.id)
             
-            # Send notifications through user's preferred channels
+            # Add role-specific template preference
             for pref in preferences:
-                if not pref['is_enabled']:
-                    continue
-                
-                channel = pref['notification_type']
-                if channel in self.notifiers:
-                    try:
-                        # Use role-specific template
-                        template = self.template_generator.get_template_for_role(role_name)
-                        
-                        # Generate notification content
-                        if channel == 'email':
-                            html_content = template.render(**change_data)
-                            # Update the notifier to use custom content
-                            success = await self._send_custom_email_notification(
-                                user, change_data, html_content
-                            )
-                        else:
-                            success = await self.notifiers[channel].send_notification(change_data)
-                        
-                        user_results[channel] = {
-                            'success': success,
-                            'preference': pref
-                        }
-                        
-                        # Record notification in database
-                        notification = Notification(
-                            form_change_id=form_change.id,
-                            notification_type=channel,
-                            recipient=user.email,
-                            subject=f"Payroll Form Change: {change_data['agency_name']} - {change_data['form_name']}",
-                            message=json.dumps(change_data),
-                            status="sent" if success else "failed"
-                        )
-                        db.add(notification)
-                        
-                    except Exception as e:
-                        logger.error(f"Error sending {channel} notification to {user.username}: {e}")
-                        user_results[channel] = {
-                            'success': False,
-                            'error': str(e),
-                            'preference': pref
-                        }
+                pref['template_type'] = role_name
+                pref['role'] = role_name
+            
+            # Send notifications through all configured channels with delivery tracking
+            notification_results = await self._send_notifications_with_tracking(
+                change_data, preferences, user, form_change.id, db
+            )
+            
+            # Convert results to expected format
+            for result in notification_results:
+                user_results[result.channel] = {
+                    'success': result.success,
+                    'error': result.error_message,
+                    'retry_count': result.retry_count,
+                    'sent_at': result.sent_at.isoformat() if result.sent_at else None
+                }
             
             if user_results:
                 results[user.username] = user_results
         
         return results
+    
+    async def _send_notifications_with_tracking(self, change_data: Dict, preferences: List[Dict], 
+                                              user: User, form_change_id: int, db: Session) -> List[NotificationResult]:
+        """Send notifications with delivery tracking and retry mechanisms."""
+        results = []
+        
+        for pref in preferences:
+            if not pref.get('is_enabled', True):
+                continue
+                
+            channel_type = pref['notification_type']
+            
+            # Create notification record in database
+            notification = Notification(
+                form_change_id=form_change_id,
+                notification_type=channel_type,
+                recipient=user.email if channel_type == 'email' else user.username,
+                subject=f"🚨 Payroll Form Change: {change_data['agency_name']} - {change_data['form_name']}",
+                message=self._generate_notification_message(change_data, pref),
+                status=DeliveryStatus.PENDING.value
+            )
+            db.add(notification)
+            db.commit()
+            db.refresh(notification)
+            
+            # Prepare content for delivery
+            content = {
+                'subject': notification.subject,
+                'message': notification.message,
+                'recipient': notification.recipient,
+                'template_type': pref.get('template_type', 'product_manager'),
+                'change_data': change_data
+            }
+            
+            # Track delivery with retry mechanisms
+            delivery_result = await self.delivery_tracker.track_notification_delivery(
+                notification.id, channel_type, notification.recipient, content
+            )
+            
+            # Create result object
+            result = NotificationResult(
+                success=delivery_result.success,
+                error_message=delivery_result.error_message,
+                delivery_time=delivery_result.delivery_time,
+                response_data=delivery_result.response_data,
+                channel=channel_type,
+                retry_count=notification.retry_count,
+                sent_at=notification.sent_at
+            )
+            
+            results.append(result)
+        
+        return results
+    
+    def _generate_notification_message(self, change_data: Dict, preference: Dict) -> str:
+        """Generate notification message based on template and preference."""
+        template_type = preference.get('template_type', 'product_manager')
+        
+        # Get appropriate template
+        if template_type == 'business_analyst':
+            template = self.template_generator.get_template_for_role('business_analyst')
+        else:
+            template = self.template_generator.get_template_for_role('product_manager')
+        
+        # Render template with change data
+        try:
+            return self.template_generator.enhanced_templates.render_template(template_type, change_data)
+        except Exception as e:
+            logger.error(f"Error rendering notification template: {e}")
+            # Fallback to simple message
+            return f"Form change detected: {change_data.get('change_description', 'Unknown change')}"
     
 
     
@@ -402,6 +445,22 @@ class EnhancedNotificationManager:
             results['summary']['roles_notified'].append('business_analyst')
         
         return results
+    
+    async def test_channel_integration(self) -> Dict[str, Any]:
+        """Test notification channel integration."""
+        logger.info("Testing notification channel integration...")
+        
+        # Test channel connectivity
+        connectivity_results = await self.channel_manager.test_channel_connectivity()
+        
+        # Get channel status
+        channel_status = self.channel_manager.get_channel_status()
+        
+        return {
+            'connectivity': connectivity_results,
+            'status': channel_status,
+            'available_channels': list(self.channel_manager.notifiers.keys())
+        }
 
 
 async def main():

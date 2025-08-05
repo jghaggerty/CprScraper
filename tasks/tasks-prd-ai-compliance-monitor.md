@@ -10,6 +10,31 @@
 - `src/reporting/weekly_reports.test.py` - Unit tests for weekly reports
 - `src/notifications/enhanced_notifier.py` - Enhanced notification system with role-based alerts
 - `src/notifications/enhanced_notifier.test.py` - Unit tests for enhanced notifications
+- `src/notifications/delivery_tracker.py` - Notification delivery tracking and retry mechanisms
+- `src/notifications/delivery_tracker.test.py` - Unit tests for delivery tracking functionality
+- `src/api/notification_tracking.py` - API endpoints for notification delivery tracking
+- `migrations/add_notification_delivery_tracking.sql` - Database migration for delivery tracking fields
+- `src/notifications/history_manager.py` - Notification history and management service
+- `src/notifications/history_manager.test.py` - Unit tests for notification history management
+- `src/api/notification_management.py` - API endpoints for notification history and management
+- `static/dashboard/notification-management.html` - Frontend interface for notification management
+- `static/dashboard/notification-management.js` - JavaScript functionality for notification management
+- `src/notifications/testing_tools.py` - Comprehensive notification testing and validation tools
+- `src/notifications/testing_tools.test.py` - Unit tests for notification testing tools
+- `src/api/notification_testing.py` - API endpoints for notification testing and validation
+- `static/dashboard/notification-testing.html` - Frontend interface for notification testing tools
+- `static/dashboard/notification-testing.js` - JavaScript functionality for notification testing interface
+- `tests/test_notification_testing_api.py` - Unit and integration tests for notification testing API
+- `src/notifications/batching_manager.py` - Notification batching and throttling functionality
+- `src/notifications/batching_manager.test.py` - Unit tests for batching and throttling functionality
+- `src/api/notification_batching_throttling.py` - API endpoints for batching and throttling management
+- `static/dashboard/notification-batching-throttling.html` - Frontend interface for batching and throttling management
+- `static/dashboard/notification-batching-throttling.js` - JavaScript functionality for batching and throttling interface
+- `tests/test_notification_batching_throttling_api.py` - Unit and integration tests for batching and throttling API
+- `migrations/add_notification_batching_throttling.sql` - Database migration for batching and throttling tracking
+- `tests/test_enhanced_notification_system.py` - Comprehensive unit tests for enhanced notification system
+- `tests/run_notification_system_tests.py` - Test runner for enhanced notification system tests
+- `tests/ENHANCED_NOTIFICATION_SYSTEM_TESTS.md` - Comprehensive documentation for notification system tests
 - `src/database/compliance_models.py` - Additional database models for compliance tracking
 - `src/database/compliance_models.test.py` - Unit tests for compliance models
 - `src/utils/export_utils.py` - Export functionality for PDF, CSV, Excel formats
@@ -52,13 +77,13 @@
 - [x] 3.0 Implement Enhanced Notification System
   - [x] 3.1 Create role-based notification system for Product Managers and Business Analysts
   - [x] 3.2 Implement email notification templates with change details and impact assessment
-  - [ ] 3.3 Add notification preferences and frequency settings per user role
-  - [ ] 3.4 Integrate with existing notification channels (email, Slack, Teams)
-  - [ ] 3.5 Implement notification delivery tracking and retry mechanisms
-  - [ ] 3.6 Add notification history and management interface
-  - [ ] 3.7 Create notification testing and validation tools
-  - [ ] 3.8 Implement notification batching and throttling to prevent spam
-  - [ ] 3.9 Add unit tests for enhanced notification system
+  - [x] 3.3 Add notification preferences and frequency settings per user role
+  - [x] 3.4 Integrate with existing notification channels (email, Slack, Teams)
+  - [x] 3.5 Implement notification delivery tracking and retry mechanisms
+  - [x] 3.6 Add notification history and management interface
+  - [x] 3.7 Create notification testing and validation tools
+- [x] 3.8 Implement notification batching and throttling to prevent spam
+  - [x] 3.9 Add unit tests for enhanced notification system
 
 - [ ] 4.0 Create Weekly Summary Reporting
   - [ ] 4.1 Implement automated weekly report generation service
