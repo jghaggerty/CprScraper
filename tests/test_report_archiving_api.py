@@ -22,7 +22,7 @@ from src.reporting.report_archiving import (
     get_archiver
 )
 from src.database.models import User, Role, UserRole
-from src.auth.user_service import get_current_user
+from src.auth.auth import get_current_user
 
 
 # Test data

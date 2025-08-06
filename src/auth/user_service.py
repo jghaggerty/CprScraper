@@ -14,6 +14,9 @@ from sqlalchemy import and_, or_
 from src.database.models import User, Role, UserRole, UserDashboardPreference, UserNotificationPreference
 from src.database.connection import get_db_session
 
+# Alias for compatibility with existing imports
+get_current_user = None  # Will be set by auth.py to avoid circular imports
+
 
 class UserService:
     """Service for managing users, roles, and permissions."""
@@ -325,4 +328,54 @@ class UserService:
                     )
                 )
             
-            return query.all() 
+            return query.all()
+    
+    def decode_access_token(self, token: str) -> Optional[Dict[str, Any]]:
+        """Decode and validate a JWT access token."""
+        try:
+            payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
+            return payload
+        except jwt.ExpiredSignatureError:
+            return None
+        except jwt.JWTError:
+            return None
+    
+    def get_user_by_id(self, db: Session, user_id: int) -> Optional[User]:
+        """Get a user by their ID."""
+        return db.query(User).filter(User.id == user_id).first()
+    
+    def user_has_role(self, user_id: int, role_name: str) -> bool:
+        """Check if a user has a specific role."""
+        with get_db_session() as session:
+            user_role = session.query(UserRole).join(Role).filter(
+                and_(
+                    UserRole.user_id == user_id,
+                    Role.name == role_name,
+                    UserRole.is_active == True
+                )
+            ).first()
+            return user_role is not None
+    
+    def user_has_permission(self, user_id: int, permission_name: str) -> bool:
+        """Check if a user has a specific permission through their roles."""
+        # For now, we'll implement basic permission checking
+        # You can extend this to have a more complex permission system
+        role_permissions = {
+            "Admin": ["read", "write", "delete", "manage_users", "manage_reports", "manage_settings"],
+            "Product Manager": ["read", "write", "manage_reports", "export_data"],
+            "Business Analyst": ["read", "export_data", "view_reports"]
+        }
+        
+        with get_db_session() as session:
+            user_roles = session.query(Role).join(UserRole).filter(
+                and_(
+                    UserRole.user_id == user_id,
+                    UserRole.is_active == True
+                )
+            ).all()
+            
+            for role in user_roles:
+                if permission_name in role_permissions.get(role.name, []):
+                    return True
+            
+            return False 

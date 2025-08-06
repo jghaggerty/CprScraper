@@ -18,7 +18,7 @@ from src.reporting.report_analytics import (
     get_analytics
 )
 from src.database.models import User, Role, UserRole
-from src.auth.user_service import get_current_user
+from src.auth.auth import get_current_user
 
 # Test data
 SAMPLE_ANALYTICS_REQUEST = {

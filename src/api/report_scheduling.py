@@ -18,7 +18,8 @@ from ..reporting.report_scheduler import (
     ReportScheduler, ScheduleConfig, ScheduleType, TriggerType, ScheduleExecution
 )
 from ..reporting.report_customization import ReportCustomizationOptions
-from ..auth.user_service import get_current_user, User
+from ..auth.auth import get_current_user
+from ..database.models import User
 
 logger = logging.getLogger(__name__)
 

@@ -16,7 +16,7 @@ from ..reporting.report_archiving import (
     ReportArchiver, ArchiveMetadata, ReportType, ArchiveStatus,
     get_archiver, archive_weekly_report, retrieve_archived_report, search_archived_reports
 )
-from ..auth.user_service import get_current_user
+from ..auth.auth import get_current_user
 from ..database.models import User
 
 logger = logging.getLogger(__name__)

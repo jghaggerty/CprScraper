@@ -22,7 +22,7 @@ from src.reporting.report_export import (
     ReportExportService, export_weekly_report, export_analytics_report, export_archive_report
 )
 from src.database.models import User, Role, UserRole
-from src.auth.user_service import get_current_user
+from src.auth.auth import get_current_user
 
 # Test data
 SAMPLE_WEEKLY_EXPORT_REQUEST = {

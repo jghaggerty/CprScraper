@@ -16,7 +16,7 @@ import io
 from ..database.connection import get_db
 from ..database.models import User
 from ..notifications.history_manager import NotificationHistoryManager
-from ..auth.user_service import get_current_user
+from ..auth.auth import get_current_user
 
 router = APIRouter(prefix="/api/notification-management", tags=["notification-management"])
 

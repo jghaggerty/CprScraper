@@ -17,7 +17,7 @@ from ..reporting.report_analytics import (
     ReportAnalytics, TrendDirection, AnalyticsPeriod,
     get_analytics, generate_analytics_report
 )
-from ..auth.user_service import get_current_user
+from ..auth.auth import get_current_user
 from ..database.models import User
 
 logger = logging.getLogger(__name__)
