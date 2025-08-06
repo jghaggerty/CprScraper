@@ -2027,7 +2027,7 @@ class ComplianceDashboard {
         // View scheduled exports button
         const viewScheduledBtn = document.getElementById('viewScheduledExportsBtn');
         if (viewScheduledBtn) {
-            viewScheduledBtn.addEventListener('click', () => this.showScheduledExports());
+            viewScheduledBtn.addEventListener('click', () => this.handleScheduledExports());
         }
 
         // Format selection
@@ -2238,11 +2238,21 @@ class ComplianceDashboard {
 
     async handleBulkExport() {
         try {
-            // Show bulk export options (simplified for now)
-            this.showError('Bulk export functionality will be implemented in a future update');
+            // Redirect to the dedicated bulk export interface
+            window.open('./bulk-export.html', '_blank');
         } catch (error) {
             console.error('Bulk export failed:', error);
-            this.showError(`Bulk export failed: ${error.message}`);
+            this.showError(`Failed to open bulk export interface: ${error.message}`);
+        }
+    }
+
+    async handleScheduledExports() {
+        try {
+            // Redirect to the export scheduling interface
+            window.open('./export-scheduling.html', '_blank');
+        } catch (error) {
+            console.error('Export scheduling failed:', error);
+            this.showError(`Failed to open export scheduling interface: ${error.message}`);
         }
     }
 

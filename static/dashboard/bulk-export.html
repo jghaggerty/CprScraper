@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk Export - Compliance Monitor</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .bulk-export-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .export-wizard {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .wizard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .wizard-steps {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .step {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            border-right: 1px solid #e9ecef;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .step:last-child {
+            border-right: none;
+        }
+
+        .step.active {
+            background: white;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .step.completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .wizard-content {
+            padding: 30px;
+        }
+
+        .export-configuration {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .config-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+
+        .config-section h3 {
+            margin-top: 0;
+            color: #495057;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.25);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .export-sources {
+            margin-bottom: 30px;
+        }
+
+        .source-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .source-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+        }
+
+        .source-card.selected {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .source-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .source-title {
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .record-count {
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .progress-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .progress-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .progress-stat {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .progress-stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .progress-stat-label {
+            font-size: 12px;
+            color: #6c757d;
+            text-transform: uppercase;
+        }
+
+        .job-list {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .job-item {
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .job-item:last-child {
+            border-bottom: none;
+        }
+
+        .job-info {
+            flex: 1;
+        }
+
+        .job-id {
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+
+        .job-details {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .job-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-processing {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .job-actions {
+            display: flex;
+            gap: 10px;
+            margin-left: 20px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd8;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-large {
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            .export-configuration {
+                grid-template-columns: 1fr;
+            }
+            
+            .wizard-steps {
+                flex-direction: column;
+            }
+            
+            .step {
+                border-right: none;
+                border-bottom: 1px solid #e9ecef;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bulk-export-container">
+        <h1>Bulk Export Manager</h1>
+        <p>Export large datasets with advanced filtering, chunking, and progress tracking.</p>
+
+        <!-- Export Wizard -->
+        <div class="export-wizard" id="exportWizard">
+            <div class="wizard-header">
+                <h2>Create Bulk Export</h2>
+                <p>Configure and launch bulk exports for compliance monitoring data</p>
+            </div>
+
+            <div class="wizard-steps">
+                <div class="step active" data-step="1">
+                    <strong>1. Data Sources</strong>
+                    <div>Select what to export</div>
+                </div>
+                <div class="step" data-step="2">
+                    <strong>2. Configuration</strong>
+                    <div>Export settings</div>
+                </div>
+                <div class="step" data-step="3">
+                    <strong>3. Review & Launch</strong>
+                    <div>Confirm and start</div>
+                </div>
+            </div>
+
+            <div class="wizard-content">
+                <!-- Step 1: Data Sources -->
+                <div class="wizard-step" id="step1">
+                    <h3>Select Data Sources</h3>
+                    <div class="export-sources" id="dataSources">
+                        <!-- Data sources will be populated by JavaScript -->
+                    </div>
+                    <button class="btn btn-primary" onclick="nextStep()">Next: Configuration</button>
+                </div>
+
+                <!-- Step 2: Configuration -->
+                <div class="wizard-step hidden" id="step2">
+                    <h3>Export Configuration</h3>
+                    <div class="export-configuration">
+                        <div class="config-section">
+                            <h3>Format & Output</h3>
+                            <div class="form-group">
+                                <label for="exportFormat">Export Format</label>
+                                <select id="exportFormat" class="form-control">
+                                    <option value="csv">CSV (Comma Separated Values)</option>
+                                    <option value="excel">Excel (with charts & formatting)</option>
+                                    <option value="pdf">PDF (Professional report)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="combinedOutput" checked>
+                                    <label for="combinedOutput">Combine all exports into single archive</label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="compressionLevel">Compression Level (0-9)</label>
+                                <input type="range" id="compressionLevel" class="form-control" min="0" max="9" value="6">
+                                <small>Higher values = smaller files, longer processing time</small>
+                            </div>
+                        </div>
+
+                        <div class="config-section">
+                            <h3>Performance & Limits</h3>
+                            <div class="form-group">
+                                <label for="chunkSize">Chunk Size (records per batch)</label>
+                                <select id="chunkSize" class="form-control">
+                                    <option value="1000">1,000 (Fast processing)</option>
+                                    <option value="5000" selected>5,000 (Balanced)</option>
+                                    <option value="10000">10,000 (Memory efficient)</option>
+                                    <option value="25000">25,000 (Large chunks)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="maxRecordsPerFile">Max Records Per File</label>
+                                <input type="number" id="maxRecordsPerFile" class="form-control" value="100000" min="1000" max="1000000">
+                            </div>
+                            <div class="form-group">
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="useStreaming">
+                                    <label for="useStreaming">Force streaming mode for large datasets</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notificationEmail">Notification Email (optional)</label>
+                        <input type="email" id="notificationEmail" class="form-control" placeholder="user@example.com">
+                        <small>Receive an email when the export is complete</small>
+                    </div>
+
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-secondary" onclick="prevStep()">Previous</button>
+                        <button class="btn btn-primary" onclick="nextStep()">Next: Review</button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Review & Launch -->
+                <div class="wizard-step hidden" id="step3">
+                    <h3>Review Export Configuration</h3>
+                    <div id="exportSummary">
+                        <!-- Summary will be populated by JavaScript -->
+                    </div>
+                    <div id="estimatedSize" class="alert alert-warning">
+                        <strong>Estimated Size:</strong> <span id="sizeEstimate">Calculating...</span>
+                    </div>
+
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-secondary" onclick="prevStep()">Previous</button>
+                        <button class="btn btn-primary btn-large" onclick="startExport()">
+                            <span id="exportButtonText">Start Bulk Export</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Container -->
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-header">
+                <h3>Export Progress</h3>
+                <button class="btn btn-danger" onclick="cancelExport()" id="cancelButton">Cancel Export</button>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div style="text-align: center; margin-bottom: 10px;">
+                <span id="progressText">0% Complete</span>
+            </div>
+
+            <div class="progress-details">
+                <div class="progress-stat">
+                    <div class="progress-stat-value" id="recordsProcessed">0</div>
+                    <div class="progress-stat-label">Records Processed</div>
+                </div>
+                <div class="progress-stat">
+                    <div class="progress-stat-value" id="totalRecords">0</div>
+                    <div class="progress-stat-label">Total Records</div>
+                </div>
+                <div class="progress-stat">
+                    <div class="progress-stat-value" id="currentChunk">0</div>
+                    <div class="progress-stat-label">Current Chunk</div>
+                </div>
+                <div class="progress-stat">
+                    <div class="progress-stat-value" id="processingRate">0</div>
+                    <div class="progress-stat-label">Records/Second</div>
+                </div>
+            </div>
+
+            <div id="exportResult" class="hidden">
+                <!-- Export result will be shown here -->
+            </div>
+        </div>
+
+        <!-- Active Jobs List -->
+        <div class="job-list">
+            <div style="background: #f8f9fa; padding: 20px; border-bottom: 1px solid #e9ecef;">
+                <h3 style="margin: 0;">Active & Recent Export Jobs</h3>
+                <button class="btn btn-secondary" onclick="refreshJobs()" style="float: right; margin-top: -30px;">
+                    Refresh
+                </button>
+            </div>
+            <div id="jobsList">
+                <!-- Jobs will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script src="bulk-export.js"></script>
+</body>
+</html>

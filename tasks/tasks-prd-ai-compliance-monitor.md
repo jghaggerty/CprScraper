@@ -69,6 +69,14 @@
 - `tests/test_export_utils_comprehensive.py` - Comprehensive unit tests for export utilities and managers
 - `src/api/data_export.py` - Enhanced data export API endpoints with advanced filtering and customization
 - `tests/test_data_export_api.py` - Comprehensive unit tests for enhanced data export API endpoints
+- `src/utils/bulk_export_manager.py` - Advanced bulk export manager with streaming, chunking, and progress tracking
+- `static/dashboard/bulk-export.html` - Frontend interface for bulk export operations with wizard and progress tracking
+- `static/dashboard/bulk-export.js` - JavaScript functionality for bulk export interface and job management
+- `tests/test_bulk_export_comprehensive.py` - Comprehensive unit tests for bulk export functionality
+- `src/scheduler/advanced_export_scheduler.py` - Advanced export scheduler with flexible timing, multiple delivery channels, and automation
+- `static/dashboard/export-scheduling.html` - Frontend interface for creating and managing scheduled exports with delivery automation
+- `static/dashboard/export-scheduling.js` - JavaScript functionality for scheduling interface and delivery channel management  
+- `tests/test_advanced_scheduling_comprehensive.py` - Comprehensive unit tests for advanced scheduling and delivery functionality
 - `config/compliance_settings.yaml` - Configuration for compliance monitoring settings
 - `static/dashboard/` - Frontend dashboard files (HTML, CSS, JS)
 - `static/dashboard/dashboard.test.js` - Frontend tests for dashboard
@@ -127,8 +135,8 @@
 - [ ] 5.0 Add Export and Data Management Features
   - [x] 5.1 Implement export functionality for PDF, CSV, and Excel formats
   - [x] 5.2 Create data export API endpoints with filtering and customization options
-  - [ ] 5.3 Add bulk export capabilities for large datasets
-  - [ ] 5.4 Implement export scheduling and automated delivery
+  - [x] 5.3 Add bulk export capabilities for large datasets
+  - [x] 5.4 Implement export scheduling and automated delivery
   - [ ] 5.5 Create data backup and recovery procedures for compliance data
   - [ ] 5.6 Add data validation and integrity checks for exports
   - [ ] 5.7 Implement export history and audit logging

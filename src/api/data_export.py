@@ -22,6 +22,9 @@ from pydantic import BaseModel, Field, validator
 from ..database.connection import get_db
 from ..database.models import FormChange, Form, Agency, MonitoringRun, Notification
 from ..utils.export_utils import ExportManager, ExportScheduler
+from ..utils.bulk_export_manager import BulkExportManager, bulk_export_manager
+from ..scheduler.advanced_export_scheduler import AdvancedExportScheduler, advanced_export_scheduler
+
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/data-export", tags=["data-export"])
 
@@ -133,6 +136,89 @@ class BulkExportRequest(BaseModel):
     exports: List[DataExportRequest]
     combined_output: bool = Field(False, description="Combine all exports into single file")
     archive_format: Optional[str] = Field("zip", description="Archive format for multiple files")
+    use_streaming: Optional[bool] = Field(None, description="Force streaming mode for large datasets")
+    chunk_size: Optional[int] = Field(5000, ge=1000, le=50000, description="Records per chunk for streaming")
+
+
+class LargeBulkExportRequest(BaseModel):
+    """Request for very large bulk exports with advanced options."""
+    exports: List[DataExportRequest]
+    max_records_per_file: Optional[int] = Field(100000, description="Maximum records per output file")
+    compression_level: Optional[int] = Field(6, ge=0, le=9, description="Compression level for archives")
+    priority: Optional[str] = Field("normal", description="Job priority: low, normal, high")
+    notification_email: Optional[str] = Field(None, description="Email for completion notification")
+
+
+class DeliveryChannelConfig(BaseModel):
+    """Configuration for delivery channels."""
+    type: str = Field(..., description="Channel type: email, ftp, s3")
+    name: str = Field(..., description="Channel name")
+    enabled: bool = Field(True, description="Whether channel is enabled")
+    
+    # Email settings
+    smtp_server: Optional[str] = None
+    smtp_port: Optional[int] = None
+    username: Optional[str] = None
+    password: Optional[str] = None
+    recipients: Optional[List[str]] = None
+    use_tls: Optional[bool] = True
+    
+    # FTP settings
+    server: Optional[str] = None
+    remote_path: Optional[str] = None
+    
+    # S3 settings
+    aws_access_key: Optional[str] = None
+    aws_secret_key: Optional[str] = None
+    bucket_name: Optional[str] = None
+    region: Optional[str] = None
+    prefix: Optional[str] = None
+
+
+class AdvancedScheduleRequest(BaseModel):
+    """Request for advanced export scheduling."""
+    name: str = Field(..., description="Schedule name")
+    description: Optional[str] = Field(None, description="Schedule description")
+    schedule: str = Field(..., description="Schedule pattern (e.g., 'daily at 09:00', 'weekly on monday at 10:30')")
+    export_config: DataExportRequest = Field(..., description="Export configuration")
+    delivery_channels: List[DeliveryChannelConfig] = Field(..., description="Delivery channels")
+    enabled: bool = Field(True, description="Whether schedule is active")
+    template_name: Optional[str] = Field(None, description="Use predefined template")
+
+
+class ScheduleUpdateRequest(BaseModel):
+    """Request for updating scheduled exports."""
+    name: Optional[str] = None
+    description: Optional[str] = None
+    schedule: Optional[str] = None
+    export_config: Optional[DataExportRequest] = None
+    delivery_channels: Optional[List[DeliveryChannelConfig]] = None
+    enabled: Optional[bool] = None
+
+
+class ScheduledExportResponse(BaseModel):
+    """Response for scheduled export operations."""
+    export_id: str
+    name: str
+    description: Optional[str] = None
+    schedule: str
+    next_run: Optional[datetime] = None
+    last_run: Optional[datetime] = None
+    run_count: int
+    failure_count: int
+    status: str
+    created_at: datetime
+    delivery_channels: int
+
+
+class ExportHistoryResponse(BaseModel):
+    """Response for export history."""
+    export_id: str
+    export_name: str
+    last_run: datetime
+    run_count: int
+    status: str
+    last_error: Optional[str] = None
 
 
 # Global export job storage (in production, use Redis or database)
@@ -411,60 +497,493 @@ async def create_bulk_export_job(
 ):
     """Create a bulk export job for multiple data sources."""
     try:
-        # Generate unique job ID
-        job_id = f"bulk_export_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}"
+        # Convert request to format expected by bulk export manager
+        export_requests = [export.dict() for export in request.exports]
         
-        # Estimate total size
-        total_records = 0
-        total_size_mb = 0.0
+        # Estimate total size using bulk export manager
+        total_records, total_size_mb, breakdown = await bulk_export_manager.estimate_bulk_export_size(
+            export_requests, db
+        )
         
-        for export_request in request.exports:
-            records, size_mb = await _estimate_export_size(export_request, db)
-            total_records += records
-            total_size_mb += size_mb
-        
-        # Validate bulk export limits
-        if total_records > 500000:
+        # Validate bulk export limits (increased for enhanced bulk export)
+        if total_records > 1000000:  # 1M records for bulk exports
             raise HTTPException(
                 status_code=400,
-                detail=f"Bulk export too large: {total_records} records (max: 500,000)"
+                detail=f"Bulk export too large: {total_records} records (max: 1,000,000)"
             )
         
-        if total_size_mb > 500:
+        if total_size_mb > 1000:  # 1GB for bulk exports
             raise HTTPException(
                 status_code=400,
-                detail=f"Bulk export too large: {total_size_mb:.1f}MB (max: 500MB)"
+                detail=f"Bulk export too large: {total_size_mb:.1f}MB (max: 1,000MB)"
             )
         
-        # Create bulk export job
-        export_jobs[job_id] = {
-            "job_id": job_id,
-            "status": "pending",
-            "type": "bulk",
-            "request": request.dict(),
-            "estimated_records": total_records,
-            "estimated_size_mb": total_size_mb,
-            "created_at": datetime.now(),
-            "expires_at": datetime.now() + timedelta(hours=48),  # Longer expiry for bulk exports
-            "progress_percent": 0,
-            "records_processed": 0
-        }
+        # Create bulk export job using enhanced manager
+        job = bulk_export_manager.create_bulk_export_job(
+            export_requests,
+            combined_output=request.combined_output,
+            archive_format=request.archive_format
+        )
         
-        # Start background processing
-        background_tasks.add_task(_process_bulk_export_job, job_id, request, db)
+        # Apply custom configuration if provided
+        if request.chunk_size:
+            job.config.chunk_size = request.chunk_size
+        
+        # Store in legacy format for API compatibility
+        export_jobs[job.job_id] = job.to_dict()
+        
+        # Start background processing with enhanced manager
+        background_tasks.add_task(
+            _process_enhanced_bulk_export,
+            job.job_id,
+            export_requests,
+            db,
+            request.combined_output
+        )
         
         return ExportJobResponse(
-            job_id=job_id,
+            job_id=job.job_id,
             status="pending",
             estimated_records=total_records,
             estimated_size_mb=total_size_mb,
-            expires_at=datetime.now() + timedelta(hours=48),
-            created_at=datetime.now()
+            expires_at=job.expires_at,
+            created_at=job.created_at
         )
     
     except Exception as e:
         logger.error(f"Error creating bulk export job: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to create bulk export job: {str(e)}")
+
+
+@router.post("/large-bulk-export", response_model=ExportJobResponse)
+async def create_large_bulk_export_job(
+    request: LargeBulkExportRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db)
+):
+    """Create a large bulk export job with advanced streaming capabilities."""
+    try:
+        # Convert request to format expected by bulk export manager
+        export_requests = [export.dict() for export in request.exports]
+        
+        # Estimate total size
+        total_records, total_size_mb, breakdown = await bulk_export_manager.estimate_bulk_export_size(
+            export_requests, db
+        )
+        
+        # Increased limits for large bulk exports
+        if total_records > 10000000:  # 10M records for large bulk exports
+            raise HTTPException(
+                status_code=400,
+                detail=f"Large bulk export too large: {total_records} records (max: 10,000,000)"
+            )
+        
+        if total_size_mb > 5000:  # 5GB for large bulk exports
+            raise HTTPException(
+                status_code=400,
+                detail=f"Large bulk export too large: {total_size_mb:.1f}MB (max: 5,000MB)"
+            )
+        
+        # Create enhanced bulk export job
+        job = bulk_export_manager.create_bulk_export_job(
+            export_requests,
+            combined_output=True,  # Always use combined output for large exports
+            archive_format="zip"
+        )
+        
+        # Apply advanced configuration
+        if request.max_records_per_file:
+            for format_type in job.config.format_limits:
+                job.config.format_limits[format_type]['max_records_per_file'] = request.max_records_per_file
+        
+        if request.compression_level:
+            job.config.compression_level = request.compression_level
+        
+        # Store notification email if provided
+        if request.notification_email:
+            job.to_dict()['notification_email'] = request.notification_email
+        
+        # Store in legacy format for API compatibility
+        export_jobs[job.job_id] = job.to_dict()
+        
+        # Start background processing
+        background_tasks.add_task(
+            _process_enhanced_bulk_export,
+            job.job_id,
+            export_requests,
+            db,
+            True  # Always use combined output
+        )
+        
+        return ExportJobResponse(
+            job_id=job.job_id,
+            status="pending",
+            estimated_records=total_records,
+            estimated_size_mb=total_size_mb,
+            expires_at=job.expires_at,
+            created_at=job.created_at
+        )
+    
+    except Exception as e:
+        logger.error(f"Error creating large bulk export job: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to create large bulk export job: {str(e)}")
+
+
+@router.get("/bulk-export/{job_id}/detailed-status")
+async def get_detailed_bulk_export_status(job_id: str):
+    """Get detailed status of a bulk export job including chunk progress."""
+    job = bulk_export_manager.get_job_status(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Bulk export job not found")
+    
+    # Check if job has expired
+    if datetime.now() > job.expires_at:
+        job.status = "expired"
+    
+    detailed_status = job.to_dict()
+    
+    # Add additional runtime information
+    if job.started_at:
+        runtime = datetime.now() - job.started_at
+        detailed_status['runtime_seconds'] = int(runtime.total_seconds())
+        
+        if job.status == "processing" and job.total_records > 0:
+            records_per_second = job.processed_records / runtime.total_seconds() if runtime.total_seconds() > 0 else 0
+            remaining_records = job.total_records - job.processed_records
+            estimated_completion = datetime.now() + timedelta(
+                seconds=remaining_records / records_per_second if records_per_second > 0 else 0
+            )
+            detailed_status['estimated_completion'] = estimated_completion
+            detailed_status['processing_rate_records_per_second'] = records_per_second
+    
+    return detailed_status
+
+
+@router.post("/bulk-export/{job_id}/cancel")
+async def cancel_bulk_export_job(job_id: str):
+    """Cancel a bulk export job and cleanup resources."""
+    success = bulk_export_manager.cancel_job(job_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Bulk export job not found")
+    
+    # Remove from legacy storage
+    if job_id in export_jobs:
+        del export_jobs[job_id]
+    
+    return {"message": f"Bulk export job {job_id} cancelled successfully"}
+
+
+@router.get("/bulk-export/cleanup")
+async def cleanup_expired_bulk_exports():
+    """Cleanup expired bulk export jobs (admin endpoint)."""
+    cleaned_count = bulk_export_manager.cleanup_expired_jobs()
+    
+    # Also cleanup legacy export jobs
+    now = datetime.now()
+    expired_legacy = []
+    
+    for job_id, job_data in export_jobs.items():
+        expires_at = job_data.get('expires_at')
+        if expires_at and isinstance(expires_at, datetime) and now > expires_at:
+            expired_legacy.append(job_id)
+    
+    for job_id in expired_legacy:
+        del export_jobs[job_id]
+    
+    total_cleaned = cleaned_count + len(expired_legacy)
+    
+    return {
+        "message": f"Cleaned up {total_cleaned} expired export jobs",
+        "bulk_exports_cleaned": cleaned_count,
+        "legacy_exports_cleaned": len(expired_legacy)
+    }
+
+
+# Advanced Scheduling Endpoints
+
+@router.post("/schedule/advanced", response_model=ScheduledExportResponse)
+async def create_advanced_schedule(
+    request: AdvancedScheduleRequest,
+    db: Session = Depends(get_db)
+):
+    """Create an advanced scheduled export with delivery automation."""
+    try:
+        # Convert request to scheduler format
+        schedule_config = {
+            'name': request.name,
+            'description': request.description,
+            'schedule': request.schedule,
+            'export_config': request.export_config.dict(),
+            'delivery_channels': [channel.dict() for channel in request.delivery_channels],
+            'enabled': request.enabled
+        }
+        
+        # Apply template if specified
+        if request.template_name:
+            templates = advanced_export_scheduler.get_export_templates()
+            if request.template_name in templates:
+                template = templates[request.template_name]
+                # Merge template config with request config
+                schedule_config['export_config'].update(template.get('export_config', {}))
+                if not request.name:
+                    schedule_config['name'] = template.get('name', request.template_name)
+        
+        # Create scheduled export
+        export_id = advanced_export_scheduler.schedule_export(schedule_config)
+        
+        # Get created export details
+        scheduled_exports = advanced_export_scheduler.get_scheduled_exports()
+        export_details = scheduled_exports.get(export_id)
+        
+        if not export_details:
+            raise HTTPException(status_code=500, detail="Failed to create scheduled export")
+        
+        return ScheduledExportResponse(
+            export_id=export_id,
+            name=export_details['config']['name'],
+            description=export_details['config'].get('description'),
+            schedule=export_details['config']['schedule'],
+            next_run=export_details['next_run'],
+            last_run=export_details['last_run'],
+            run_count=export_details['run_count'],
+            failure_count=export_details['failure_count'],
+            status=export_details['status'],
+            created_at=export_details['created_at'],
+            delivery_channels=export_details['delivery_channels']
+        )
+    
+    except Exception as e:
+        logger.error(f"Failed to create advanced schedule: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to create scheduled export: {str(e)}")
+
+
+@router.get("/schedule/advanced")
+async def list_advanced_schedules():
+    """List all advanced scheduled exports."""
+    try:
+        scheduled_exports = advanced_export_scheduler.get_scheduled_exports()
+        
+        schedules = []
+        for export_id, details in scheduled_exports.items():
+            schedules.append(ScheduledExportResponse(
+                export_id=export_id,
+                name=details['config']['name'],
+                description=details['config'].get('description'),
+                schedule=details['config']['schedule'],
+                next_run=details['next_run'],
+                last_run=details['last_run'],
+                run_count=details['run_count'],
+                failure_count=details['failure_count'],
+                status=details['status'],
+                created_at=details['created_at'],
+                delivery_channels=details['delivery_channels']
+            ))
+        
+        return {"scheduled_exports": schedules}
+    
+    except Exception as e:
+        logger.error(f"Failed to list scheduled exports: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve scheduled exports")
+
+
+@router.get("/schedule/advanced/{export_id}")
+async def get_advanced_schedule(export_id: str):
+    """Get details of a specific scheduled export."""
+    try:
+        scheduled_exports = advanced_export_scheduler.get_scheduled_exports()
+        
+        if export_id not in scheduled_exports:
+            raise HTTPException(status_code=404, detail="Scheduled export not found")
+        
+        details = scheduled_exports[export_id]
+        
+        return ScheduledExportResponse(
+            export_id=export_id,
+            name=details['config']['name'],
+            description=details['config'].get('description'),
+            schedule=details['config']['schedule'],
+            next_run=details['next_run'],
+            last_run=details['last_run'],
+            run_count=details['run_count'],
+            failure_count=details['failure_count'],
+            status=details['status'],
+            created_at=details['created_at'],
+            delivery_channels=details['delivery_channels']
+        )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get scheduled export {export_id}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve scheduled export")
+
+
+@router.put("/schedule/advanced/{export_id}", response_model=ScheduledExportResponse)
+async def update_advanced_schedule(
+    export_id: str,
+    request: ScheduleUpdateRequest,
+    db: Session = Depends(get_db)
+):
+    """Update an advanced scheduled export."""
+    try:
+        # Get current schedule
+        scheduled_exports = advanced_export_scheduler.get_scheduled_exports()
+        
+        if export_id not in scheduled_exports:
+            raise HTTPException(status_code=404, detail="Scheduled export not found")
+        
+        current_config = scheduled_exports[export_id]['config']
+        
+        # Update configuration with provided fields
+        updated_config = current_config.copy()
+        
+        if request.name is not None:
+            updated_config['name'] = request.name
+        if request.description is not None:
+            updated_config['description'] = request.description
+        if request.schedule is not None:
+            updated_config['schedule'] = request.schedule
+        if request.export_config is not None:
+            updated_config['export_config'] = request.export_config.dict()
+        if request.delivery_channels is not None:
+            updated_config['delivery_channels'] = [channel.dict() for channel in request.delivery_channels]
+        if request.enabled is not None:
+            updated_config['enabled'] = request.enabled
+        
+        # Update the scheduled export
+        success = advanced_export_scheduler.update_scheduled_export(export_id, updated_config)
+        
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to update scheduled export")
+        
+        # Return updated details
+        updated_exports = advanced_export_scheduler.get_scheduled_exports()
+        details = updated_exports[export_id]
+        
+        return ScheduledExportResponse(
+            export_id=export_id,
+            name=details['config']['name'],
+            description=details['config'].get('description'),
+            schedule=details['config']['schedule'],
+            next_run=details['next_run'],
+            last_run=details['last_run'],
+            run_count=details['run_count'],
+            failure_count=details['failure_count'],
+            status=details['status'],
+            created_at=details['created_at'],
+            delivery_channels=details['delivery_channels']
+        )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to update scheduled export {export_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to update scheduled export: {str(e)}")
+
+
+@router.delete("/schedule/advanced/{export_id}")
+async def delete_advanced_schedule(export_id: str):
+    """Delete an advanced scheduled export."""
+    try:
+        success = advanced_export_scheduler.cancel_scheduled_export(export_id)
+        
+        if not success:
+            raise HTTPException(status_code=404, detail="Scheduled export not found")
+        
+        return {"message": f"Scheduled export {export_id} deleted successfully"}
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to delete scheduled export {export_id}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to delete scheduled export")
+
+
+@router.get("/schedule/templates")
+async def get_export_templates():
+    """Get available export templates."""
+    try:
+        templates = advanced_export_scheduler.get_export_templates()
+        return {"templates": templates}
+    
+    except Exception as e:
+        logger.error(f"Failed to get export templates: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve export templates")
+
+
+@router.get("/schedule/history")
+async def get_export_history(
+    export_id: Optional[str] = Query(None, description="Filter by specific export ID"),
+    limit: int = Query(100, ge=1, le=1000, description="Maximum number of records")
+):
+    """Get export execution history."""
+    try:
+        history = advanced_export_scheduler.get_export_history(export_id, limit)
+        
+        history_responses = []
+        for record in history:
+            history_responses.append(ExportHistoryResponse(
+                export_id=record['export_id'],
+                export_name=record['export_name'],
+                last_run=record['last_run'],
+                run_count=record['run_count'],
+                status=record['status'],
+                last_error=record['last_error']
+            ))
+        
+        return {"history": history_responses}
+    
+    except Exception as e:
+        logger.error(f"Failed to get export history: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve export history")
+
+
+@router.post("/schedule/start")
+async def start_scheduler():
+    """Start the advanced export scheduler (admin endpoint)."""
+    try:
+        advanced_export_scheduler.start()
+        return {"message": "Advanced export scheduler started successfully"}
+    
+    except Exception as e:
+        logger.error(f"Failed to start scheduler: {e}")
+        raise HTTPException(status_code=500, detail="Failed to start scheduler")
+
+
+@router.post("/schedule/stop")
+async def stop_scheduler():
+    """Stop the advanced export scheduler (admin endpoint)."""
+    try:
+        advanced_export_scheduler.stop()
+        return {"message": "Advanced export scheduler stopped successfully"}
+    
+    except Exception as e:
+        logger.error(f"Failed to stop scheduler: {e}")
+        raise HTTPException(status_code=500, detail="Failed to stop scheduler")
+
+
+@router.get("/schedule/status")
+async def get_scheduler_status():
+    """Get scheduler status and statistics."""
+    try:
+        scheduled_exports = advanced_export_scheduler.get_scheduled_exports()
+        
+        active_count = sum(1 for export in scheduled_exports.values() if export['status'] == 'active')
+        total_runs = sum(export['run_count'] for export in scheduled_exports.values())
+        total_failures = sum(export['failure_count'] for export in scheduled_exports.values())
+        
+        return {
+            "scheduler_running": advanced_export_scheduler.running,
+            "total_schedules": len(scheduled_exports),
+            "active_schedules": active_count,
+            "total_runs": total_runs,
+            "total_failures": total_failures,
+            "success_rate": (total_runs - total_failures) / total_runs * 100 if total_runs > 0 else 0
+        }
+    
+    except Exception as e:
+        logger.error(f"Failed to get scheduler status: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get scheduler status")
 
 
 # Helper functions
@@ -789,8 +1308,43 @@ async def _process_export_job(job_id: str, request: DataExportRequest, db: Sessi
         })
 
 
+async def _process_enhanced_bulk_export(
+    job_id: str,
+    export_requests: List[Dict[str, Any]],
+    db: Session,
+    combined_output: bool = False
+):
+    """Enhanced background task to process bulk export jobs with streaming support."""
+    try:
+        # Use the bulk export manager for processing
+        await bulk_export_manager.process_bulk_export(
+            job_id, export_requests, db, combined_output
+        )
+        
+        # Update legacy export jobs storage for API compatibility
+        job = bulk_export_manager.get_job_status(job_id)
+        if job:
+            export_jobs[job_id] = job.to_dict()
+            
+            # Add download URL for API compatibility
+            if job.final_archive_path:
+                export_jobs[job_id]["download_url"] = f"/api/data-export/export/{job_id}/download"
+                export_jobs[job_id]["file_path"] = job.final_archive_path
+                export_jobs[job_id]["file_size_bytes"] = os.path.getsize(job.final_archive_path) if os.path.exists(job.final_archive_path) else 0
+    
+    except Exception as e:
+        logger.error(f"Enhanced bulk export job {job_id} failed: {e}")
+        # Update both storages with error
+        if job_id in export_jobs:
+            export_jobs[job_id].update({
+                "status": "failed",
+                "error_message": str(e),
+                "completed_at": datetime.now()
+            })
+
+
 async def _process_bulk_export_job(job_id: str, request: BulkExportRequest, db: Session):
-    """Background task to process a bulk export job."""
+    """Legacy background task to process a bulk export job."""
     try:
         export_jobs[job_id]["status"] = "processing"
         
