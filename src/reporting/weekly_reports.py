@@ -18,7 +18,7 @@ from ..database.models import (
     FormChange, Form, Agency, Client, ClientFormUsage, 
     MonitoringRun, Notification, WorkItem, User, UserRole, Role
 )
-from ..notifications.enhanced_notifier import EnhancedNotifier
+from ..notifications.enhanced_notifier import EnhancedNotificationManager
 from ..utils.export_utils import ExportUtils
 
 logger = logging.getLogger(__name__)
@@ -29,7 +29,7 @@ class WeeklyReportGenerator:
     
     def __init__(self):
         self.export_utils = ExportUtils()
-        self.notifier = EnhancedNotifier()
+        self.notifier = EnhancedNotificationManager()
     
     def generate_weekly_report(
         self,

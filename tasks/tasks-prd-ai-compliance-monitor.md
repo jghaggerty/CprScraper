@@ -10,6 +10,10 @@
 - `src/reporting/weekly_reports.test.py` - Unit tests for weekly reports
 - `src/reporting/report_templates.py` - Consolidated report templates for different audiences and formats
 - `src/reporting/report_templates.test.py` - Unit tests for report templates
+- `src/reporting/report_distribution.py` - Automated report distribution system for different user roles
+- `src/reporting/report_distribution.test.py` - Unit tests for report distribution system
+- `src/reporting/report_customization.py` - Comprehensive report customization options and preferences
+- `src/reporting/report_customization.test.py` - Unit tests for report customization system
 - `src/notifications/enhanced_notifier.py` - Enhanced notification system with role-based alerts
 - `src/notifications/enhanced_notifier.test.py` - Unit tests for enhanced notifications
 - `src/notifications/delivery_tracker.py` - Notification delivery tracking and retry mechanisms
@@ -43,6 +47,10 @@
 - `src/utils/export_utils.test.py` - Unit tests for export utilities
 - `src/scheduler/enhanced_scheduler.py` - Enhanced scheduler with daily/weekly monitoring
 - `src/scheduler/enhanced_scheduler.test.py` - Unit tests for enhanced scheduler
+- `src/api/report_scheduling.py` - API endpoints for report scheduling and automated delivery
+- `static/dashboard/report-scheduling.html` - Frontend interface for report scheduling management
+- `static/dashboard/report-scheduling.js` - JavaScript functionality for report scheduling interface
+- `tests/test_report_scheduling_api.py` - Unit tests for report scheduling API
 - `config/compliance_settings.yaml` - Configuration for compliance monitoring settings
 - `static/dashboard/` - Frontend dashboard files (HTML, CSS, JS)
 - `static/dashboard/dashboard.test.js` - Frontend tests for dashboard
@@ -65,7 +73,7 @@
   - [x] 1.8 Create monitoring statistics and performance tracking
   - [x] 1.9 Add unit tests for AI-enhanced monitoring functionality
 
-  - [x] 2.0 Build Comprehensive Dashboard Interface
+- [x] 2.0 Build Comprehensive Dashboard Interface
   - [x] 2.1 Create enhanced dashboard API endpoints for compliance monitoring data
   - [x] 2.2 Implement filtering and search functionality by state, form type, date range, and severity
   - [x] 2.3 Add real-time monitoring status and statistics display
@@ -90,9 +98,9 @@
 - [ ] 4.0 Create Weekly Summary Reporting
   - [x] 4.1 Implement automated weekly report generation service
   - [x] 4.2 Create consolidated report templates with all compliance changes
-  - [ ] 4.3 Add report distribution system for Product Managers and Business Analysts
-  - [ ] 4.4 Implement report customization options (date ranges, states, form types)
-  - [ ] 4.5 Add report scheduling and automated delivery
+  - [x] 4.3 Add report distribution system for Product Managers and Business Analysts
+  - [x] 4.4 Implement report customization options (date ranges, states, form types)
+  - [x] 4.5 Add report scheduling and automated delivery
   - [ ] 4.6 Create report archiving and historical access
   - [ ] 4.7 Implement report analytics and trend identification
   - [ ] 4.8 Add report export functionality in multiple formats

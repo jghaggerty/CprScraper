@@ -3,8 +3,8 @@ import json
 import logging
 import smtplib
 from datetime import datetime
-from email.mime.text import MimeText
-from email.mime.multipart import MimeMultipart
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from typing import Dict, List, Optional
 from jinja2 import Template
 
@@ -145,13 +145,13 @@ class EmailNotifier:
             html_content = template.email_template.render(**change_data)
             
             # Create message
-            msg = MimeMultipart('alternative')
+            msg = MIMEMultipart('alternative')
             msg['Subject'] = f"🚨 Payroll Form Change: {change_data['agency_name']} - {change_data['form_name']}"
             msg['From'] = self.from_address
             msg['To'] = ', '.join(self.to_addresses)
             
             # Add HTML content
-            html_part = MimeText(html_content, 'html')
+            html_part = MIMEText(html_content, 'html')
             msg.attach(html_part)
             
             # Send email
