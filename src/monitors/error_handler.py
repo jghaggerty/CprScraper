@@ -11,7 +11,7 @@ import logging
 import time
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple, Any, Callable, TypeVar, Union
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from enum import Enum
 import aiohttp
 from aiohttp import ClientTimeout, ClientError

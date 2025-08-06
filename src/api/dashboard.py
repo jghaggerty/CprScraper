@@ -19,7 +19,7 @@ from ..database.models import (
     Agency, Form, FormChange, MonitoringRun, Notification,
     Client, ClientFormUsage, WorkItem
 )
-from ..monitors.monitoring_statistics import MonitoringStatistics
+from ..monitors.monitoring_statistics import MonitoringStatistics, get_monitoring_statistics
 from ..monitors.error_handler import GovernmentWebsiteErrorHandler
 from ..utils.export_utils import export_manager, export_scheduler
 

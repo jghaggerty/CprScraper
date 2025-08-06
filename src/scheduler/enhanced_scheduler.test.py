@@ -99,7 +99,7 @@ class TestEnhancedMonitoringScheduler:
             )
             
             assert scheduler.ai_monitor == mock_ai_monitor
-            assert scheduler.notification_manager == mock_notifier
+            assert scheduler.notification_manager == mock_notification_manager
             assert scheduler.confidence_threshold == 80
             assert scheduler.enable_llm_analysis == False
             assert scheduler.batch_size == 5
