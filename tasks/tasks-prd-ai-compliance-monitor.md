@@ -66,6 +66,9 @@
 - `static/dashboard/report-export.html` - Frontend interface for report export
 - `static/dashboard/report-export.js` - JavaScript functionality for export interface
 - `tests/test_report_export_api.py` - Unit tests for report export functionality
+- `tests/test_export_utils_comprehensive.py` - Comprehensive unit tests for export utilities and managers
+- `src/api/data_export.py` - Enhanced data export API endpoints with advanced filtering and customization
+- `tests/test_data_export_api.py` - Comprehensive unit tests for enhanced data export API endpoints
 - `config/compliance_settings.yaml` - Configuration for compliance monitoring settings
 - `static/dashboard/` - Frontend dashboard files (HTML, CSS, JS)
 - `static/dashboard/dashboard.test.js` - Frontend tests for dashboard
@@ -122,8 +125,8 @@
   - [x] 4.9 Add unit tests for weekly reporting functionality
 
 - [ ] 5.0 Add Export and Data Management Features
-  - [ ] 5.1 Implement export functionality for PDF, CSV, and Excel formats
-  - [ ] 5.2 Create data export API endpoints with filtering and customization options
+  - [x] 5.1 Implement export functionality for PDF, CSV, and Excel formats
+  - [x] 5.2 Create data export API endpoints with filtering and customization options
   - [ ] 5.3 Add bulk export capabilities for large datasets
   - [ ] 5.4 Implement export scheduling and automated delivery
   - [ ] 5.5 Create data backup and recovery procedures for compliance data

@@ -27,6 +27,8 @@ class ComprehensiveTestRunner:
             "tests/test_user_management.py",
             "tests/test_widgets.py",
             "tests/test_export_functionality.py",
+            "tests/test_export_utils_comprehensive.py",
+            "tests/test_data_export_api.py",
             "tests/test_mobile_responsiveness.py"
         ]
         

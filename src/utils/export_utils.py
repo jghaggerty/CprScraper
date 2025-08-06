@@ -42,6 +42,23 @@ class ExportManager:
     def __init__(self):
         self.supported_formats = ['csv', 'excel', 'pdf']
         self.max_export_size = 10000  # Maximum records per export
+        self.export_metadata = {
+            'csv': {
+                'mime_type': 'text/csv',
+                'extension': '.csv',
+                'description': 'Comma-separated values format for spreadsheet applications'
+            },
+            'excel': {
+                'mime_type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'extension': '.xlsx', 
+                'description': 'Microsoft Excel format with charts and formatting'
+            },
+            'pdf': {
+                'mime_type': 'application/pdf',
+                'extension': '.pdf',
+                'description': 'Portable Document Format for professional reports'
+            }
+        }
         
     def export_data(
         self,
@@ -64,9 +81,9 @@ class ExportManager:
         """
         if format_type not in self.supported_formats:
             raise ValueError(f"Unsupported format: {format_type}")
-            
-        if len(data) > self.max_export_size:
-            raise ValueError(f"Export size exceeds maximum limit of {self.max_export_size} records")
+        
+        # Validate data and configuration
+        self.validate_export_data(data, export_config)
             
         if not filename:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -82,6 +99,63 @@ class ExportManager:
         except Exception as e:
             logger.error(f"Export failed for format {format_type}: {str(e)}")
             raise
+    
+    def get_export_metadata(self, format_type: str) -> Dict[str, Any]:
+        """
+        Get metadata for a specific export format.
+        
+        Args:
+            format_type: Export format ('csv', 'excel', 'pdf')
+            
+        Returns:
+            Dictionary containing format metadata
+        """
+        if format_type not in self.supported_formats:
+            raise ValueError(f"Unsupported format: {format_type}")
+        return self.export_metadata[format_type].copy()
+    
+    def get_supported_formats(self) -> List[Dict[str, Any]]:
+        """
+        Get list of all supported export formats with metadata.
+        
+        Returns:
+            List of format dictionaries with metadata
+        """
+        formats = []
+        for format_type in self.supported_formats:
+            format_info = self.export_metadata[format_type].copy()
+            format_info['format'] = format_type
+            formats.append(format_info)
+        return formats
+    
+    def validate_export_data(self, data: List[Dict[str, Any]], config: Dict[str, Any]) -> bool:
+        """
+        Validate export data and configuration before processing.
+        
+        Args:
+            data: List of dictionaries containing the data to export
+            config: Export configuration
+            
+        Returns:
+            True if data is valid for export
+            
+        Raises:
+            ValueError: If data or config is invalid
+        """
+        # Check data size
+        if len(data) > self.max_export_size:
+            raise ValueError(f"Export size exceeds maximum limit of {self.max_export_size} records")
+        
+        # Check columns configuration
+        if config.get('columns') and data:
+            available_columns = set(data[0].keys()) if data else set()
+            requested_columns = set(config['columns'])
+            missing_columns = requested_columns - available_columns
+            
+            if missing_columns:
+                raise ValueError(f"Requested columns not found in data: {missing_columns}")
+        
+        return True
     
     def _export_csv(self, data: List[Dict[str, Any]], config: Dict[str, Any], filename: str) -> str:
         """Export data to CSV format."""
@@ -192,6 +266,11 @@ class ExportManager:
         for row_idx, row_data in enumerate(data, 2):
             for col_idx, col_name in enumerate(columns, 1):
                 value = row_data.get(col_name, "")
+                # Convert complex types to string for Excel compatibility
+                if isinstance(value, (list, dict)):
+                    value = json.dumps(value)
+                elif isinstance(value, datetime):
+                    value = value.strftime("%Y-%m-%d %H:%M:%S")
                 cell = ws.cell(row=row_idx, column=col_idx, value=value)
                 
                 # Apply conditional formatting

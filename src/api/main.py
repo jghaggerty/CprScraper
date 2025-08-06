@@ -25,6 +25,7 @@ from .report_scheduling import router as report_scheduling_router
 from .report_archiving import router as report_archiving_router
 from .report_analytics import router as report_analytics_router
 from .report_export import router as report_export_router
+from .data_export import router as data_export_router
 
 # Initialize logging
 logging.basicConfig(level=logging.INFO)
@@ -66,6 +67,7 @@ app.include_router(report_scheduling_router)
 app.include_router(report_archiving_router)
 app.include_router(report_analytics_router)
 app.include_router(report_export_router)
+app.include_router(data_export_router)
 
 # Pydantic models for API requests/responses
 class AgencyResponse(BaseModel):
