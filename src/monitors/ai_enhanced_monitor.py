@@ -333,7 +333,7 @@ class AIEnhancedMonitor:
         
         try:
             # Fetch current content
-            content, status_code, metadata = await scraper.fetch_page_content(
+            content, status_code, _ = await scraper.fetch_page_content(
                 form.form_url or form.agency.base_url
             )
             
@@ -798,29 +798,26 @@ class AIEnhancedMonitor:
             batches = self.config_manager.get_optimized_monitoring_batches()
             
             # Process batches with enhanced error handling
-            scraper = WebScraper()
             total_processing_time = 0
             
-            # Track error handling statistics
-            error_stats_before = await self.error_handler.get_error_stats()
-            
-            for batch in batches:
-                batch_start = datetime.utcnow()
-                
-                # Process forms in batch
-                batch_results = await self._process_comprehensive_batch(batch, scraper)
-                
-                # Update results
-                results["agency_results"].extend(batch_results.get("agency_results", []))
-                results["forms_processed"] += batch_results.get("forms_processed", 0)
-                results["forms_failed"] += batch_results.get("forms_failed", 0)
-                results["changes_detected"] += batch_results.get("changes_detected", 0)
-                results["ai_analyses_performed"] += batch_results.get("ai_analyses_performed", 0)
-                
-                batch_time = (datetime.utcnow() - batch_start).total_seconds() * 1000
-                total_processing_time += batch_time
-                
-                logger.info(f"Batch {batch['batch_id']} completed in {batch_time:.2f}ms")
+            async with WebScraper() as scraper:
+                for batch in batches:
+                    batch_start = datetime.utcnow()
+                    
+                    # Process forms in batch
+                    batch_results = await self._process_comprehensive_batch(batch, scraper)
+                    
+                    # Update results
+                    results["agency_results"].extend(batch_results.get("agency_results", []))
+                    results["forms_processed"] += batch_results.get("forms_processed", 0)
+                    results["forms_failed"] += batch_results.get("forms_failed", 0)
+                    results["changes_detected"] += batch_results.get("changes_detected", 0)
+                    results["ai_analyses_performed"] += batch_results.get("ai_analyses_performed", 0)
+                    
+                    batch_time = (datetime.utcnow() - batch_start).total_seconds() * 1000
+                    total_processing_time += batch_time
+                    
+                    logger.info(f"Batch {batch['batch_id']} completed in {batch_time:.2f}ms")
             
             # Calculate totals
             results["total_agencies"] = len(self.config_manager.get_state_coverage_status()) + len(self.config_manager.get_federal_coverage_status())
@@ -892,7 +889,7 @@ class AIEnhancedMonitor:
         
         finally:
             results["completed_at"] = datetime.utcnow()
-            scraper.close() if 'scraper' in locals() else None
+            # WebScraper cleanup is handled by its async context manager
         
         return results
     

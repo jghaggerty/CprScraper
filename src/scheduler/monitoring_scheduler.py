@@ -7,11 +7,11 @@ from typing import Dict, List, Optional
 from concurrent.futures import ThreadPoolExecutor
 import threading
 
-from ..database.connection import get_db
-from ..database.models import Agency, Form, MonitoringRun
-from ..monitors.web_scraper import AgencyMonitor
-from ..notifications.notifier import NotificationManager
-from ..utils.config_loader import get_monitoring_settings
+from src.database.connection import get_db
+from src.database.models import Agency, Form, MonitoringRun, FormChange, Notification
+from src.monitors.web_scraper import AgencyMonitor
+from src.notifications.notifier import NotificationManager
+from src.utils.config_loader import get_monitoring_settings
 
 logger = logging.getLogger(__name__)
 
@@ -412,6 +412,16 @@ def stop_scheduler():
 
 
 if __name__ == "__main__":
+    # This module should be run from the project root using:
+    # python -m src.scheduler.monitoring_scheduler
+    import sys
+    from pathlib import Path
+    
+    # Add project root to path if not already there
+    project_root = Path(__file__).parent.parent.parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
+    
     # Test the scheduler
     logging.basicConfig(level=logging.INFO)
     
