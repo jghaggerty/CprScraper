@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Analytics & Trend Identification - CPR Monitor</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .analytics-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .analytics-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+        }
+        
+        .analytics-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.5em;
+        }
+        
+        .analytics-header p {
+            margin: 0;
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .analytics-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 5px;
+            margin-bottom: 30px;
+            overflow-x: auto;
+        }
+        
+        .analytics-tab {
+            flex: 1;
+            padding: 15px 20px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            min-width: 120px;
+        }
+        
+        .analytics-tab.active {
+            background: #667eea;
+            color: white;
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+        }
+        
+        .analytics-tab:hover:not(.active) {
+            background: #e9ecef;
+        }
+        
+        .analytics-content {
+            display: none;
+        }
+        
+        .analytics-content.active {
+            display: block;
+        }
+        
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .analytics-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .analytics-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .analytics-card h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 1.2em;
+        }
+        
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .metric-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+        
+        .trend-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .trend-increasing {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .trend-decreasing {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .trend-stable {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .analytics-form {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .form-group input[type="checkbox"] {
+            width: auto;
+            margin-top: 5px;
+        }
+        
+        .btn-generate {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-generate:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .chart-placeholder {
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            border-radius: 5px;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .insights-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .insights-list li {
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .recommendations-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .recommendations-list li {
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            background: #e8f5e8;
+            border-radius: 5px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .health-score {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .health-score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 2em;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .health-excellent {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+        
+        .health-good {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+        }
+        
+        .health-poor {
+            background: linear-gradient(135deg, #dc3545, #e83e8c);
+        }
+        
+        .anomaly-item {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .anomaly-date {
+            font-weight: bold;
+            color: #856404;
+        }
+        
+        .anomaly-details {
+            margin-top: 5px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+        }
+        
+        @media (max-width: 768px) {
+            .analytics-tabs {
+                flex-direction: column;
+            }
+            
+            .analytics-tab {
+                margin-bottom: 5px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="analytics-container">
+        <div class="analytics-header">
+            <h1>📊 Report Analytics & Trend Identification</h1>
+            <p>Comprehensive analytics, trend analysis, and predictive insights for compliance monitoring</p>
+        </div>
+        
+        <div class="analytics-tabs">
+            <div class="analytics-tab active" data-tab="overview">📈 Overview</div>
+            <div class="analytics-tab" data-tab="comprehensive">🔍 Comprehensive Analysis</div>
+            <div class="analytics-tab" data-tab="trends">📉 Trends & Patterns</div>
+            <div class="analytics-tab" data-tab="predictions">🔮 Predictions</div>
+            <div class="analytics-tab" data-tab="anomalies">⚠️ Anomalies</div>
+            <div class="analytics-tab" data-tab="health">🏥 System Health</div>
+            <div class="analytics-tab" data-tab="comparison">⚖️ Period Comparison</div>
+        </div>
+        
+        <!-- Overview Tab -->
+        <div id="overview-tab" class="analytics-content active">
+            <div class="analytics-form">
+                <h3>Quick Analytics</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="quickPeriod">Analysis Period (Days)</label>
+                        <select id="quickPeriod">
+                            <option value="7">Last 7 Days</option>
+                            <option value="30" selected>Last 30 Days</option>
+                            <option value="90">Last 90 Days</option>
+                            <option value="180">Last 6 Months</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="quickAgencies">Agencies (Optional)</label>
+                        <select id="quickAgencies" multiple>
+                            <option value="">All Agencies</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="quickForms">Form Types (Optional)</label>
+                        <select id="quickForms" multiple>
+                            <option value="">All Forms</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn-generate" onclick="analyticsManager.generateQuickAnalytics()">
+                    Generate Quick Analytics
+                </button>
+            </div>
+            
+            <div id="quickResults" style="display: none;">
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <h3>Total Changes</h3>
+                        <div class="metric-value" id="quickTotalChanges">-</div>
+                        <div class="metric-label">Changes detected in period</div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Success Rate</h3>
+                        <div class="metric-value" id="quickSuccessRate">-</div>
+                        <div class="metric-label">Monitoring success rate</div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Health Score</h3>
+                        <div class="metric-value" id="quickHealthScore">-</div>
+                        <div class="metric-label">System health score</div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Trend Direction</h3>
+                        <div class="metric-value" id="quickTrendDirection">-</div>
+                        <div class="metric-label">Change trend direction</div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Key Insights</h3>
+                    <ul id="quickInsights" class="insights-list"></ul>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Recommendations</h3>
+                    <ul id="quickRecommendations" class="recommendations-list"></ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Comprehensive Analysis Tab -->
+        <div id="comprehensive-tab" class="analytics-content">
+            <div class="analytics-form">
+                <h3>Comprehensive Analytics Configuration</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="compStartDate">Start Date</label>
+                        <input type="datetime-local" id="compStartDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="compEndDate">End Date</label>
+                        <input type="datetime-local" id="compEndDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="compAgencies">Agencies (Optional)</label>
+                        <select id="compAgencies" multiple>
+                            <option value="">All Agencies</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="compForms">Form Types (Optional)</label>
+                        <select id="compForms" multiple>
+                            <option value="">All Forms</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="includePredictions" checked>
+                            Include Predictions
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="includeAnomalies" checked>
+                            Include Anomaly Detection
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="includeCorrelations" checked>
+                            Include Correlation Analysis
+                        </label>
+                    </div>
+                </div>
+                <button class="btn-generate" onclick="analyticsManager.generateComprehensiveAnalytics()">
+                    Generate Comprehensive Analysis
+                </button>
+            </div>
+            
+            <div id="comprehensiveResults" style="display: none;">
+                <!-- Results will be populated by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Trends Tab -->
+        <div id="trends-tab" class="analytics-content">
+            <div class="analytics-form">
+                <h3>Trend Analysis</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="trendPeriod">Analysis Period</label>
+                        <select id="trendPeriod">
+                            <option value="daily">Daily (Last 7 Days)</option>
+                            <option value="weekly">Weekly (Last 8 Weeks)</option>
+                            <option value="monthly" selected>Monthly (Last 90 Days)</option>
+                            <option value="quarterly">Quarterly (Last 270 Days)</option>
+                            <option value="yearly">Yearly (Last 365 Days)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="trendAgencies">Agencies (Optional)</label>
+                        <select id="trendAgencies" multiple>
+                            <option value="">All Agencies</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="trendForms">Form Types (Optional)</label>
+                        <select id="trendForms" multiple>
+                            <option value="">All Forms</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn-generate" onclick="analyticsManager.generateTrendAnalysis()">
+                    Generate Trend Analysis
+                </button>
+            </div>
+            
+            <div id="trendResults" style="display: none;">
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <h3>Trend Direction</h3>
+                        <div class="metric-value" id="trendDirection">-</div>
+                        <div class="metric-label">Overall trend direction</div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Trend Strength</h3>
+                        <div class="metric-value" id="trendStrength">-</div>
+                        <div class="metric-label">Trend strength (0-1)</div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Trend Percentage</h3>
+                        <div class="metric-value" id="trendPercentage">-</div>
+                        <div class="metric-label">Percentage change</div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Volatility</h3>
+                        <div class="metric-value" id="volatilityScore">-</div>
+                        <div class="metric-label">Data volatility score</div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Daily Trend Data</h3>
+                    <div id="trendChart" class="chart-placeholder">
+                        Chart will be displayed here
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Predictions Tab -->
+        <div id="predictions-tab" class="analytics-content">
+            <div class="analytics-form">
+                <h3>Predictive Analytics</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="predictionDays">Days to Predict</label>
+                        <input type="number" id="predictionDays" value="30" min="1" max="90">
+                    </div>
+                    <div class="form-group">
+                        <label for="predictionAgencies">Agencies (Optional)</label>
+                        <select id="predictionAgencies" multiple>
+                            <option value="">All Agencies</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="predictionForms">Form Types (Optional)</label>
+                        <select id="predictionForms" multiple>
+                            <option value="">All Forms</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn-generate" onclick="analyticsManager.generatePredictions()">
+                    Generate Predictions
+                </button>
+            </div>
+            
+            <div id="predictionResults" style="display: none;">
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <h3>Next Week Prediction</h3>
+                        <div class="metric-value" id="predictionWeek">-</div>
+                        <div class="metric-label">Predicted changes</div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Next Month Prediction</h3>
+                        <div class="metric-value" id="predictionMonth">-</div>
+                        <div class="metric-label">Predicted changes</div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Confidence Level</h3>
+                        <div class="metric-value" id="predictionConfidence">-</div>
+                        <div class="metric-label">Prediction confidence</div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Confidence Interval</h3>
+                        <div class="metric-value" id="confidenceInterval">-</div>
+                        <div class="metric-label">Range for next week</div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Prediction Factors</h3>
+                    <ul id="predictionFactors" class="insights-list"></ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Anomalies Tab -->
+        <div id="anomalies-tab" class="analytics-content">
+            <div class="analytics-form">
+                <h3>Anomaly Detection</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="anomalyAgencies">Agencies (Optional)</label>
+                        <select id="anomalyAgencies" multiple>
+                            <option value="">All Agencies</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="anomalyForms">Form Types (Optional)</label>
+                        <select id="anomalyForms" multiple>
+                            <option value="">All Forms</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn-generate" onclick="analyticsManager.detectAnomalies()">
+                    Detect Anomalies
+                </button>
+            </div>
+            
+            <div id="anomalyResults" style="display: none;">
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <h3>Anomalies Detected</h3>
+                        <div class="metric-value" id="anomalyCount">-</div>
+                        <div class="metric-label">Total anomalies found</div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Spike Anomalies</h3>
+                        <div class="metric-value" id="spikeAnomalies">-</div>
+                        <div class="metric-label">Unusual increases</div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Drop Anomalies</h3>
+                        <div class="metric-value" id="dropAnomalies">-</div>
+                        <div class="metric-label">Unusual decreases</div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>High Severity</h3>
+                        <div class="metric-value" id="highSeverityAnomalies">-</div>
+                        <div class="metric-label">High severity anomalies</div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Anomaly Details</h3>
+                    <div id="anomalyDetails"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- System Health Tab -->
+        <div id="health-tab" class="analytics-content">
+            <div class="analytics-form">
+                <h3>System Health Analysis</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="healthDays">Analysis Period (Days)</label>
+                        <input type="number" id="healthDays" value="30" min="1" max="365">
+                    </div>
+                    <div class="form-group">
+                        <label for="healthAgencies">Agencies (Optional)</label>
+                        <select id="healthAgencies" multiple>
+                            <option value="">All Agencies</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="healthForms">Form Types (Optional)</label>
+                        <select id="healthForms" multiple>
+                            <option value="">All Forms</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn-generate" onclick="analyticsManager.generateHealthScore()">
+                    Generate Health Score
+                </button>
+            </div>
+            
+            <div id="healthResults" style="display: none;">
+                <div class="health-score">
+                    <div id="healthScoreCircle" class="health-score-circle health-excellent">
+                        <span id="healthScoreValue">-</span>
+                    </div>
+                    <h3>Overall System Health Score</h3>
+                </div>
+                
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <h3>Performance Score</h3>
+                        <div class="metric-value" id="performanceScore">-</div>
+                        <div class="metric-label">Monitoring performance</div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Change Management</h3>
+                        <div class="metric-value" id="changeManagementScore">-</div>
+                        <div class="metric-label">Change handling efficiency</div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Impact Management</h3>
+                        <div class="metric-value" id="impactManagementScore">-</div>
+                        <div class="metric-label">Impact assessment quality</div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Health Recommendations</h3>
+                    <ul id="healthRecommendations" class="recommendations-list"></ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Period Comparison Tab -->
+        <div id="comparison-tab" class="analytics-content">
+            <div class="analytics-form">
+                <h3>Period Comparison Analysis</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="period1Start">Period 1 Start</label>
+                        <input type="datetime-local" id="period1Start">
+                    </div>
+                    <div class="form-group">
+                        <label for="period1End">Period 1 End</label>
+                        <input type="datetime-local" id="period1End">
+                    </div>
+                    <div class="form-group">
+                        <label for="period2Start">Period 2 Start</label>
+                        <input type="datetime-local" id="period2Start">
+                    </div>
+                    <div class="form-group">
+                        <label for="period2End">Period 2 End</label>
+                        <input type="datetime-local" id="period2End">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="comparisonAgencies">Agencies (Optional)</label>
+                        <select id="comparisonAgencies" multiple>
+                            <option value="">All Agencies</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="comparisonForms">Form Types (Optional)</label>
+                        <select id="comparisonForms" multiple>
+                            <option value="">All Forms</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn-generate" onclick="analyticsManager.comparePeriods()">
+                    Compare Periods
+                </button>
+            </div>
+            
+            <div id="comparisonResults" style="display: none;">
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <h3>Health Score Change</h3>
+                        <div class="metric-value" id="healthScoreChange">-</div>
+                        <div class="metric-label">Change in health score</div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Success Rate Change</h3>
+                        <div class="metric-value" id="successRateChange">-</div>
+                        <div class="metric-label">Change in success rate</div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Total Changes Change</h3>
+                        <div class="metric-value" id="totalChangesChange">-</div>
+                        <div class="metric-label">Change in total changes</div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Impact Score Change</h3>
+                        <div class="metric-value" id="impactScoreChange">-</div>
+                        <div class="metric-label">Change in impact score</div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Comparison Insights</h3>
+                    <ul id="comparisonInsights" class="insights-list"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="report-analytics.js"></script>
+</body>
+</html> 

@@ -19,7 +19,7 @@ from ..database.models import (
     MonitoringRun, Notification, WorkItem, User, UserRole, Role
 )
 from ..notifications.enhanced_notifier import EnhancedNotificationManager
-from ..utils.export_utils import ExportUtils
+from ..utils.export_utils import ExportManager
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ class WeeklyReportGenerator:
     """Generate comprehensive weekly reports for compliance monitoring."""
     
     def __init__(self):
-        self.export_utils = ExportUtils()
+        self.export_utils = ExportManager()
         self.notifier = EnhancedNotificationManager()
     
     def generate_weekly_report(
@@ -488,14 +488,18 @@ class WeeklyReportGenerator:
         Returns:
             Report data as bytes
         """
-        if format == 'pdf':
-            return self.export_utils.export_to_pdf(report_data, include_charts)
-        elif format == 'excel':
-            return self.export_utils.export_to_excel(report_data, include_charts)
-        elif format == 'csv':
-            return self.export_utils.export_to_csv(report_data)
-        else:
-            raise ValueError(f"Unsupported export format: {format}")
+        # Convert report data to list format for export
+        export_data = []
+        if 'form_changes' in report_data:
+            export_data = report_data['form_changes']
+        
+        export_config = {
+            'include_charts': include_charts,
+            'report_type': 'weekly',
+            'title': report_data.get('custom_title', 'Weekly Compliance Report')
+        }
+        
+        return self.export_utils.export_data(export_data, format, export_config)
     
     def schedule_weekly_report(
         self,

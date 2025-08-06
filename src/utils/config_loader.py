@@ -365,6 +365,19 @@ def expand_environment_variables(config: Dict[str, Any]) -> Dict[str, Any]:
     return expand_value(config)
 
 
+def get_agencies_config(config_path: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Get agencies configuration for report customization.
+    
+    Args:
+        config_path: Optional path to configuration file
+        
+    Returns:
+        Dictionary containing agency configuration data
+    """
+    return load_agency_config(config_path)
+
+
 def get_environment_config() -> Dict[str, Any]:
     """
     Get configuration from environment variables.

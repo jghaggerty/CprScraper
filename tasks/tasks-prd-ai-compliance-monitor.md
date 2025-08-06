@@ -51,6 +51,21 @@
 - `static/dashboard/report-scheduling.html` - Frontend interface for report scheduling management
 - `static/dashboard/report-scheduling.js` - JavaScript functionality for report scheduling interface
 - `tests/test_report_scheduling_api.py` - Unit tests for report scheduling API
+- `src/reporting/report_archiving.py` - Comprehensive report archiving and historical access system
+- `src/api/report_archiving.py` - API endpoints for report archiving and management
+- `static/dashboard/report-archiving.html` - Frontend interface for report archiving
+- `static/dashboard/report-archiving.js` - JavaScript functionality for archiving interface
+- `tests/test_report_archiving_api.py` - Unit tests for report archiving functionality
+- `src/reporting/report_analytics.py` - Comprehensive report analytics and trend identification service
+- `src/api/report_analytics.py` - API endpoints for report analytics and trend identification
+- `static/dashboard/report-analytics.html` - Frontend interface for report analytics
+- `static/dashboard/report-analytics.js` - JavaScript functionality for analytics interface
+- `tests/test_report_analytics_api.py` - Unit tests for report analytics functionality
+- `src/reporting/report_export.py` - Comprehensive report export service for multiple formats
+- `src/api/report_export.py` - API endpoints for report export functionality
+- `static/dashboard/report-export.html` - Frontend interface for report export
+- `static/dashboard/report-export.js` - JavaScript functionality for export interface
+- `tests/test_report_export_api.py` - Unit tests for report export functionality
 - `config/compliance_settings.yaml` - Configuration for compliance monitoring settings
 - `static/dashboard/` - Frontend dashboard files (HTML, CSS, JS)
 - `static/dashboard/dashboard.test.js` - Frontend tests for dashboard
@@ -95,16 +110,16 @@
   - [x] 3.8 Implement notification batching and throttling to prevent spam
   - [x] 3.9 Add unit tests for enhanced notification system
 
-- [ ] 4.0 Create Weekly Summary Reporting
+- [x] 4.0 Create Weekly Summary Reporting
   - [x] 4.1 Implement automated weekly report generation service
   - [x] 4.2 Create consolidated report templates with all compliance changes
   - [x] 4.3 Add report distribution system for Product Managers and Business Analysts
   - [x] 4.4 Implement report customization options (date ranges, states, form types)
   - [x] 4.5 Add report scheduling and automated delivery
-  - [ ] 4.6 Create report archiving and historical access
-  - [ ] 4.7 Implement report analytics and trend identification
-  - [ ] 4.8 Add report export functionality in multiple formats
-  - [ ] 4.9 Add unit tests for weekly reporting functionality
+  - [x] 4.6 Create report archiving and historical access
+  - [x] 4.7 Implement report analytics and trend identification
+  - [x] 4.8 Add report export functionality in multiple formats
+  - [x] 4.9 Add unit tests for weekly reporting functionality
 
 - [ ] 5.0 Add Export and Data Management Features
   - [ ] 5.1 Implement export functionality for PDF, CSV, and Excel formats

@@ -22,6 +22,9 @@ from .notification_management import router as notification_management_router
 from .notification_testing import router as notification_testing_router
 from .notification_batching_throttling import router as notification_batching_throttling_router
 from .report_scheduling import router as report_scheduling_router
+from .report_archiving import router as report_archiving_router
+from .report_analytics import router as report_analytics_router
+from .report_export import router as report_export_router
 
 # Initialize logging
 logging.basicConfig(level=logging.INFO)
@@ -60,6 +63,9 @@ app.include_router(notification_management_router)
 app.include_router(notification_testing_router)
 app.include_router(notification_batching_throttling_router)
 app.include_router(report_scheduling_router)
+app.include_router(report_archiving_router)
+app.include_router(report_analytics_router)
+app.include_router(report_export_router)
 
 # Pydantic models for API requests/responses
 class AgencyResponse(BaseModel):
