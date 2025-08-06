@@ -52,7 +52,7 @@ class ArchiveReportRequest(BaseModel):
     description: Optional[str] = Field(None, description="Report description", max_length=1000)
     tags: Optional[List[str]] = Field(None, description="Tags for categorization")
     retention_days: int = Field(2555, description="Days to retain the report", ge=1, le=3650)
-    access_level: str = Field("standard", description="Access level required", regex="^(public|standard|restricted|admin)$")
+    access_level: str = Field("standard", description="Access level required", pattern="^(public|standard|restricted|admin)$")
 
 
 class ArchiveMetadataResponse(BaseModel):

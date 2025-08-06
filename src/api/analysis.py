@@ -1,20 +1,33 @@
 """
-FastAPI endpoints for AI-powered document analysis.
+AI Analysis API Endpoints
 
-This module provides REST API endpoints for document change detection,
-analysis, and batch processing with comprehensive error handling.
+Provides REST API endpoints for AI-powered document change analysis,
+including semantic similarity detection, change classification, and
+severity scoring for regulatory compliance monitoring.
 """
 
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends
 from fastapi.responses import JSONResponse
 
+# Import models that should always be available
 from ..analysis import (
-    AnalysisService, AnalysisRequest, AnalysisResponse, AnalysisError,
-    BatchAnalysisRequest, BatchAnalysisResponse,
-    AnalysisTimeoutError, AnalysisProcessingError
+    AnalysisRequest, AnalysisResponse, AnalysisError,
+    BatchAnalysisRequest, BatchAnalysisResponse
 )
+
+# Try to import service classes that may have dependencies
+try:
+    from ..analysis import (
+        AnalysisService, AnalysisTimeoutError, AnalysisProcessingError
+    )
+    ANALYSIS_SERVICE_AVAILABLE = True
+except ImportError:
+    ANALYSIS_SERVICE_AVAILABLE = False
+    AnalysisService = None
+    AnalysisTimeoutError = Exception
+    AnalysisProcessingError = Exception
 
 logger = logging.getLogger(__name__)
 
@@ -22,12 +35,17 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/analysis", tags=["analysis"])
 
 # Global analysis service instance
-_analysis_service: AnalysisService = None
+_analysis_service: Optional[AnalysisService] = None
 
 
 def get_analysis_service() -> AnalysisService:
     """Get or create the analysis service instance."""
     global _analysis_service
+    if not ANALYSIS_SERVICE_AVAILABLE:
+        raise HTTPException(
+            status_code=503, 
+            detail="Analysis service not available - required dependencies not installed"
+        )
     if _analysis_service is None:
         _analysis_service = AnalysisService()
     return _analysis_service

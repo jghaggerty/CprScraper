@@ -4,7 +4,7 @@ Pydantic models for AI analysis requests and responses.
 
 from datetime import datetime
 from typing import Dict, List, Optional, Any, Literal
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 
 class AnalysisRequest(BaseModel):
@@ -18,7 +18,8 @@ class AnalysisRequest(BaseModel):
     confidence_threshold: int = Field(default=70, ge=0, le=100, description="Minimum confidence threshold for AI analysis")
     use_llm_fallback: bool = Field(default=True, description="Whether to use LLM analysis for low-confidence cases")
     
-    @validator('confidence_threshold')
+    @field_validator('confidence_threshold')
+    @classmethod
     def validate_confidence_threshold(cls, v):
         if not 0 <= v <= 100:
             raise ValueError('Confidence threshold must be between 0 and 100')
@@ -41,6 +42,8 @@ class ChangeClassification(BaseModel):
 class SemanticAnalysis(BaseModel):
     """Semantic similarity analysis results."""
     
+    model_config = {"protected_namespaces": ()}
+    
     similarity_score: int = Field(..., ge=0, le=100, description="Semantic similarity percentage")
     significant_differences: List[str] = Field(default_factory=list, description="List of significant differences found")
     change_indicators: List[str] = Field(default_factory=list, description="Indicators that suggest meaningful changes")
@@ -50,6 +53,8 @@ class SemanticAnalysis(BaseModel):
 
 class LLMAnalysis(BaseModel):
     """LLM-based analysis results."""
+    
+    model_config = {"protected_namespaces": ()}
     
     reasoning: str = Field(..., description="Detailed explanation of the analysis")
     key_changes: List[str] = Field(default_factory=list, description="List of key changes identified")
@@ -77,10 +82,11 @@ class AnalysisResponse(BaseModel):
     processing_summary: Dict[str, Any] = Field(default_factory=dict, description="Processing metadata")
     confidence_breakdown: Dict[str, int] = Field(default_factory=dict, description="Confidence scores by component")
     
-    class Config:
-        json_encoders = {
+    model_config = {
+        "json_encoders": {
             datetime: lambda v: v.isoformat()
         }
+    }
 
 
 class AnalysisError(BaseModel):
@@ -96,10 +102,11 @@ class AnalysisError(BaseModel):
 class BatchAnalysisRequest(BaseModel):
     """Request model for batch analysis of multiple documents."""
     
-    analyses: List[AnalysisRequest] = Field(..., max_items=10, description="List of analysis requests")
+    analyses: List[AnalysisRequest] = Field(..., max_length=10, description="List of analysis requests")
     batch_id: Optional[str] = Field(None, description="Optional batch identifier")
     
-    @validator('analyses')
+    @field_validator('analyses')
+    @classmethod
     def validate_analyses_not_empty(cls, v):
         if not v:
             raise ValueError('At least one analysis request is required')

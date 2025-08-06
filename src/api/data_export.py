@@ -17,7 +17,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Response, Backgrou
 from fastapi.responses import StreamingResponse, FileResponse
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, or_, func, desc, asc
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 from ..database.connection import get_db
 from ..database.models import FormChange, Form, Agency, MonitoringRun, Notification
@@ -91,7 +91,8 @@ class ExportCustomization(BaseModel):
     date_format: Optional[str] = Field("%Y-%m-%d %H:%M:%S", description="Date format string")
     timezone: Optional[str] = Field("UTC", description="Timezone for dates")
     
-    @validator('format')
+    @field_validator('format')
+    @classmethod
     def validate_format(cls, v):
         if v not in ['csv', 'excel', 'pdf']:
             raise ValueError('Format must be csv, excel, or pdf')

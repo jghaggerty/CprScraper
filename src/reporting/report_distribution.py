@@ -13,7 +13,7 @@ import asyncio
 
 from ..database.connection import get_db
 from ..database.models import User, UserRole, Role
-from ..notifications.enhanced_notifier import EnhancedNotifier
+from ..notifications.enhanced_notifier import EnhancedNotificationManager
 from ..reporting.weekly_reports import WeeklyReportGenerator
 from ..reporting.report_templates import ReportTemplateManager
 from ..utils.config_loader import get_notification_settings
@@ -37,7 +37,7 @@ class ReportDistributionManager:
     def __init__(self):
         self.report_generator = WeeklyReportGenerator()
         self.template_manager = ReportTemplateManager()
-        self.notifier = EnhancedNotifier()
+        self.notifier = EnhancedNotificationManager()
         self.notification_config = get_notification_settings()
         
         # Role-specific distribution configurations
