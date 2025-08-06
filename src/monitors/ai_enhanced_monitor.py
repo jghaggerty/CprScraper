@@ -559,7 +559,7 @@ class AIEnhancedMonitor:
             Dictionary describing the change record created
         """
         # Generate change description
-        change_description = f"AI-detected {ai_result.classification.category}: "
+        change_description = f"AI-detected {ai_result.classification.category}: " \
                            f"{', '.join(ai_result.semantic_analysis.significant_differences[:2])}"
         
         # Perform enhanced change classification
@@ -837,7 +837,7 @@ class AIEnhancedMonitor:
             }
             
             # Record comprehensive monitoring performance
-            comprehensive_processing_time = int((datetime.utcnow() - comprehensive_start_time).total_seconds() * 1000)
+            comprehensive_processing_time = int((datetime.utcnow() - start_time).total_seconds() * 1000)
             await record_monitoring_event("performance",
                                         operation_type="comprehensive_monitoring",
                                         processing_time_ms=comprehensive_processing_time,
