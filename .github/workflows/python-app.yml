@@ -31,6 +31,9 @@ jobs:
     - name: Create data directory
       run: |
         mkdir -p ./data
+    - name: Set PYTHONPATH
+      run: |
+        echo "PYTHONPATH=$PYTHONPATH:$(pwd)" >> $GITHUB_ENV
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
