@@ -15,8 +15,10 @@ import os
 
 try:
     import openai
+    OPENAI_AVAILABLE = True
 except ImportError:
     openai = None
+    OPENAI_AVAILABLE = False
 
 from .models import LLMAnalysis, ChangeClassification
 

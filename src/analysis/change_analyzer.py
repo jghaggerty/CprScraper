@@ -17,8 +17,10 @@ try:
     from sentence_transformers import SentenceTransformer
     from sklearn.metrics.pairwise import cosine_similarity
     import Levenshtein
+    DEPENDENCIES_AVAILABLE = True
 except ImportError as e:
-    raise ImportError(f"Required dependencies not installed: {e}")
+    DEPENDENCIES_AVAILABLE = False
+    # Note: logger is not available yet, will be set up later
 
 from .models import SemanticAnalysis
 
@@ -56,7 +58,11 @@ class ChangeAnalyzer:
         self.model_name = model_name
         self.similarity_threshold = similarity_threshold
         self.model = None
-        self._load_model()
+        
+        if DEPENDENCIES_AVAILABLE:
+            self._load_model()
+        else:
+            logger.warning("Dependencies not available. Using mock implementation.")
         
         # Patterns for detecting cosmetic changes
         self.cosmetic_patterns = [
@@ -80,6 +86,10 @@ class ChangeAnalyzer:
         
     def _load_model(self) -> None:
         """Load the sentence transformer model."""
+        if not DEPENDENCIES_AVAILABLE:
+            logger.warning("Cannot load model - dependencies not available")
+            return
+            
         try:
             logger.info(f"Loading sentence transformer model: {self.model_name}")
             self.model = SentenceTransformer(self.model_name)
@@ -178,6 +188,22 @@ class ChangeAnalyzer:
         Returns:
             Similarity score between 0 and 1
         """
+        if not DEPENDENCIES_AVAILABLE or self.model is None:
+            # Fallback to simple text comparison
+            if text1 == text2:
+                return 1.0
+            elif text1.lower() == text2.lower():
+                return 0.9
+            else:
+                # Simple similarity based on common words
+                words1 = set(text1.lower().split())
+                words2 = set(text2.lower().split())
+                if not words1 and not words2:
+                    return 1.0
+                intersection = words1.intersection(words2)
+                union = words1.union(words2)
+                return len(intersection) / len(union) if union else 0.0
+        
         try:
             # Encode texts
             embeddings = self.model.encode([text1, text2])

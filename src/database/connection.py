@@ -15,6 +15,10 @@ DATABASE_URL = os.getenv(
     "sqlite:///./data/payroll_monitor.db"
 )
 
+# Use in-memory database for testing if specified
+if os.getenv("USE_TEST_DB", "false").lower() == "true":
+    DATABASE_URL = "sqlite:///:memory:"
+
 # Connection pool configuration
 POOL_SIZE = int(os.getenv("DB_POOL_SIZE", "10"))
 MAX_OVERFLOW = int(os.getenv("DB_MAX_OVERFLOW", "20"))
@@ -131,9 +135,19 @@ def init_db() -> None:
         Exception: If database initialization fails
     """
     try:
+        # Skip initialization if using in-memory database for testing
+        if DATABASE_URL == "sqlite:///:memory:":
+            create_tables()
+            logger.info("Test database initialized successfully")
+            return
+            
         # Ensure data directory exists for SQLite
         if DATABASE_URL.startswith("sqlite"):
-            data_dir = os.path.dirname(DATABASE_URL.replace("sqlite:///", ""))
+            # Handle both relative and absolute paths
+            db_path = DATABASE_URL.replace("sqlite:///", "")
+            if db_path.startswith("./"):
+                db_path = db_path[2:]  # Remove ./ prefix
+            data_dir = os.path.dirname(db_path)
             if data_dir and not os.path.exists(data_dir):
                 os.makedirs(data_dir, exist_ok=True)
                 logger.info(f"Created data directory: {data_dir}")

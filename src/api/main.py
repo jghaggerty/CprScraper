@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional, Dict
 import logging
+import os
 from datetime import datetime, timedelta
 
 from ..database.connection import get_db, init_db
@@ -31,8 +32,9 @@ from .data_export import router as data_export_router
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize database
-init_db()
+# Initialize database (skip during testing)
+if not os.getenv("SKIP_DB_INIT", "false").lower() == "true":
+    init_db()
 
 # Create FastAPI app
 app = FastAPI(
