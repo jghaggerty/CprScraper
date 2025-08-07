@@ -8,7 +8,7 @@ LLM integration, and the overall analysis service workflow.
 import pytest
 import asyncio
 from unittest.mock import Mock, patch, AsyncMock
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Import models that should always be available
 from src.analysis import (

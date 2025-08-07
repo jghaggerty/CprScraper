@@ -8,7 +8,7 @@ This module provides enhanced integration with existing notification channels
 import asyncio
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass
 from enum import Enum

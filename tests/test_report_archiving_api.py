@@ -9,7 +9,7 @@ import pytest
 import json
 import tempfile
 import shutil
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from unittest.mock import Mock, patch, MagicMock
 from pathlib import Path
 

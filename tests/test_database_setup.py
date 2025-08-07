@@ -11,7 +11,7 @@ def test_database_initialization():
     """Test that database initialization works in test environment."""
     try:
         init_db()
-        assert test_connection() == True
+        assert test_connection() is True
     except Exception as e:
         pytest.fail(f"Database initialization failed: {e}")
 

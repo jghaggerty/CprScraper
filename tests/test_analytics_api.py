@@ -6,7 +6,7 @@ Tests the historical data visualization and trend analysis functionality.
 
 import pytest
 from unittest.mock import Mock, patch, AsyncMock
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
@@ -29,19 +29,19 @@ class TestHistoricalDataAPI:
         return [
             Mock(
                 id=1,
-                detected_at=datetime.utcnow() - timedelta(days=1),
+                detected_at=datetime.now(timezone.utc) - timedelta(days=1),
                 severity="critical",
                 status="detected"
             ),
             Mock(
                 id=2,
-                detected_at=datetime.utcnow() - timedelta(days=2),
+                detected_at=datetime.now(timezone.utc) - timedelta(days=2),
                 severity="high",
                 status="detected"
             ),
             Mock(
                 id=3,
-                detected_at=datetime.utcnow() - timedelta(days=3),
+                detected_at=datetime.now(timezone.utc) - timedelta(days=3),
                 severity="medium",
                 status="detected"
             )
@@ -53,13 +53,13 @@ class TestHistoricalDataAPI:
         return [
             Mock(
                 id=1,
-                started_at=datetime.utcnow() - timedelta(days=1),
+                started_at=datetime.now(timezone.utc) - timedelta(days=1),
                 status="completed",
                 response_time_ms=1000
             ),
             Mock(
                 id=2,
-                started_at=datetime.utcnow() - timedelta(days=2),
+                started_at=datetime.now(timezone.utc) - timedelta(days=2),
                 status="failed",
                 response_time_ms=None
             )
@@ -166,7 +166,7 @@ class TestTrendsSummaryAPI:
             mock_db.query.return_value.filter.return_value.group_by.return_value.order_by.return_value.all.return_value = [mock_changes_result]
             
             # Test the endpoint logic
-            end_date = datetime.utcnow()
+            end_date = datetime.now(timezone.utc)
             start_date = end_date - timedelta(days=30)
             
             assert (end_date - start_date).days == 30
@@ -267,7 +267,7 @@ class TestAgencyPerformanceAPI:
             mock_db.query.return_value.filter.return_value.all.return_value = [mock_run]
             
             # Test the endpoint logic
-            end_date = datetime.utcnow()
+            end_date = datetime.now(timezone.utc)
             start_date = end_date - timedelta(days=30)
             
             assert (end_date - start_date).days == 30
@@ -354,7 +354,7 @@ class TestAnalyticsIntegration:
         """Test analytics error handling."""
         # Test with invalid date range
         try:
-            end_date = datetime.utcnow()
+            end_date = datetime.now(timezone.utc)
             start_date = end_date - timedelta(days=-1)  # Invalid negative days
             assert False, "Should have raised an error"
         except Exception:

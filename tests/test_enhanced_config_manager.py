@@ -9,7 +9,7 @@ import pytest
 import tempfile
 import yaml
 from unittest.mock import patch, MagicMock
-from datetime import datetime
+from datetime import datetime, timezone
 
 from src.utils.enhanced_config_manager import (
     EnhancedConfigManager, 
@@ -44,7 +44,7 @@ class TestCoverageMetrics:
             active_federal_agencies=2,
             active_forms=52,
             coverage_percentage=100.0,
-            last_updated=datetime.utcnow(),
+            last_updated=datetime.now(timezone.utc),
             status=CoverageStatus.COMPLETE
         )
         

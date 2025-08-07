@@ -6,7 +6,7 @@ This module contains comprehensive tests for the notification history and manage
 
 import pytest
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from unittest.mock import Mock, patch, AsyncMock
 from sqlalchemy.orm import Session
 
@@ -40,14 +40,14 @@ class TestNotificationHistoryManager:
         notification.recipient = "test@example.com"
         notification.subject = "Test Notification"
         notification.message = "Test message"
-        notification.sent_at = datetime.utcnow()
+        notification.sent_at = datetime.now(timezone.utc)
         notification.status = "delivered"
         notification.error_message = None
         notification.retry_count = 0
         notification.delivery_time = 2.5
         notification.response_data = {"status": "success"}
-        notification.created_at = datetime.utcnow()
-        notification.updated_at = datetime.utcnow()
+        notification.created_at = datetime.now(timezone.utc)
+        notification.updated_at = datetime.now(timezone.utc)
         return notification
     
     @pytest.fixture
@@ -58,7 +58,7 @@ class TestNotificationHistoryManager:
         form_change.change_type = "content"
         form_change.change_description = "Test change"
         form_change.severity = "medium"
-        form_change.detected_at = datetime.utcnow()
+        form_change.detected_at = datetime.now(timezone.utc)
         return form_change
     
     @pytest.fixture
@@ -208,8 +208,8 @@ class TestNotificationHistoryManager:
         # Test
         result = await history_manager.get_notification_analytics(
             db=mock_db,
-            start_date=datetime.utcnow() - timedelta(days=7),
-            end_date=datetime.utcnow()
+            start_date=datetime.now(timezone.utc) - timedelta(days=7),
+            end_date=datetime.now(timezone.utc)
         )
         
         # Assertions
@@ -556,8 +556,8 @@ class TestNotificationHistoryManager:
         
         # Test
         filters = {
-            "start_date": datetime.utcnow() - timedelta(days=7),
-            "end_date": datetime.utcnow()
+            "start_date": datetime.now(timezone.utc) - timedelta(days=7),
+            "end_date": datetime.now(timezone.utc)
         }
         result = history_manager._apply_filters(mock_query, filters)
         
@@ -734,8 +734,8 @@ class TestNotificationHistoryManagerIntegration:
         # Test analytics
         result = await history_manager.get_notification_analytics(
             db=mock_db,
-            start_date=datetime.utcnow() - timedelta(days=30),
-            end_date=datetime.utcnow()
+            start_date=datetime.now(timezone.utc) - timedelta(days=30),
+            end_date=datetime.now(timezone.utc)
         )
         
         # Assertions

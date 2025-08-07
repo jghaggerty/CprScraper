@@ -7,7 +7,7 @@ Tests the mobile-responsive design and professional appearance enhancements.
 import pytest
 from unittest.mock import Mock, patch
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class TestMobileResponsiveness:

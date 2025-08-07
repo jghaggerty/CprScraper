@@ -9,7 +9,7 @@ rate limiting, and other reliability issues.
 import asyncio
 import logging
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Tuple, Any, Callable, TypeVar, Union
 from dataclasses import dataclass, field, asdict
 from enum import Enum
@@ -80,7 +80,7 @@ class ErrorContext:
     error_message: Optional[str] = None
     status_code: Optional[int] = None
     response_time: Optional[float] = None
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 
@@ -123,7 +123,7 @@ class CircuitBreaker:
             state = self.states.get(key, CircuitBreakerState())
             
             if state.state == "open":
-                if state.next_attempt_time and datetime.utcnow() >= state.next_attempt_time:
+                if state.next_attempt_time and datetime.now(timezone.utc) >= state.next_attempt_time:
                     # Transition to half-open
                     state.state = "half-open"
                     state.next_attempt_time = None
@@ -152,11 +152,11 @@ class CircuitBreaker:
             
             state = self.states[key]
             state.failure_count += 1
-            state.last_failure_time = datetime.utcnow()
+            state.last_failure_time = datetime.now(timezone.utc)
             
             if state.failure_count >= self.config.circuit_breaker_threshold:
                 state.state = "open"
-                state.next_attempt_time = datetime.utcnow() + timedelta(
+                state.next_attempt_time = datetime.now(timezone.utc) + timedelta(
                     seconds=self.config.circuit_breaker_timeout
                 )
                 logger.warning(f"Circuit breaker opened for {key} after {state.failure_count} failures")

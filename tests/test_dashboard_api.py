@@ -7,7 +7,7 @@ including filtering, search, real-time status, and statistics.
 
 import pytest
 from unittest.mock import Mock, patch, AsyncMock
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
@@ -51,7 +51,7 @@ class TestDashboardAPI:
         form.name = "WH-347"
         form.title = "Statement of Compliance"
         form.is_active = True
-        form.last_checked = datetime.utcnow() - timedelta(hours=1)
+        form.last_checked = datetime.now(timezone.utc) - timedelta(hours=1)
         form.check_frequency = "weekly"
         form.agency = sample_agency
         return form
@@ -65,7 +65,7 @@ class TestDashboardAPI:
         change.change_type = "content"
         change.severity = "high"
         change.status = "detected"
-        change.detected_at = datetime.utcnow() - timedelta(hours=2)
+        change.detected_at = datetime.now(timezone.utc) - timedelta(hours=2)
         change.ai_confidence_score = 85
         change.ai_change_category = "form_update"
         change.is_cosmetic_change = False
@@ -77,8 +77,8 @@ class TestDashboardAPI:
         """Sample monitoring run for testing."""
         run = Mock(spec=MonitoringRun)
         run.id = 1
-        run.started_at = datetime.utcnow() - timedelta(hours=1)
-        run.completed_at = datetime.utcnow() - timedelta(minutes=30)
+        run.started_at = datetime.now(timezone.utc) - timedelta(hours=1)
+        run.completed_at = datetime.now(timezone.utc) - timedelta(minutes=30)
         run.status = "completed"
         run.response_time_ms = 1500
         return run
@@ -102,7 +102,7 @@ class TestDashboardAPI:
         
         # Mock last monitoring run
         mock_last_run = Mock()
-        mock_last_run.started_at = datetime.utcnow() - timedelta(hours=1)
+        mock_last_run.started_at = datetime.now(timezone.utc) - timedelta(hours=1)
         mock_db_session.query.return_value.order_by.return_value.first.return_value = mock_last_run
         
         with patch('src.api.dashboard.get_db', return_value=mock_db_session):
@@ -415,7 +415,7 @@ class TestDashboardAPIIntegration:
                 5, 25, 20, 3, 15, 45, 60, 2, 8, 5, 12
             ]
             mock_last_run = Mock()
-            mock_last_run.started_at = datetime.utcnow() - timedelta(hours=1)
+            mock_last_run.started_at = datetime.now(timezone.utc) - timedelta(hours=1)
             mock_db.query.return_value.order_by.return_value.first.return_value = mock_last_run
             mock_get_db.return_value = mock_db
             

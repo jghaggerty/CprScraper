@@ -9,7 +9,7 @@ circuit breaker patterns, and statistical tracking.
 import pytest
 import asyncio
 import aiohttp
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from unittest.mock import Mock, AsyncMock, patch
 from selenium.common.exceptions import TimeoutException, WebDriverException
 
@@ -148,7 +148,7 @@ class TestCircuitBreakerState:
     
     def test_circuit_breaker_state_with_values(self):
         """Test circuit breaker state with custom values."""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         state = CircuitBreakerState(
             failure_count=3,
             last_failure_time=now,
@@ -219,7 +219,7 @@ class TestCircuitBreaker:
         
         # Manually set next attempt time to past
         state = await circuit_breaker.get_state("test_key")
-        state.next_attempt_time = datetime.utcnow() - timedelta(seconds=1)
+        state.next_attempt_time = datetime.now(timezone.utc) - timedelta(seconds=1)
         
         # Should transition to half-open
         assert not await circuit_breaker.is_open("test_key")

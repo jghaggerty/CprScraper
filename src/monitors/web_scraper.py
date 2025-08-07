@@ -2,7 +2,7 @@ import asyncio
 import hashlib
 import logging
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Tuple, Any
 from urllib.parse import urljoin, urlparse
 from contextlib import asynccontextmanager
@@ -151,7 +151,7 @@ class WebScraper:
         """
         metadata = {
             "url": url,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "method": "selenium" if use_selenium else "aiohttp",
             "retries": 0,
             "error_handling": "enhanced"
@@ -430,11 +430,11 @@ class AgencyMonitor:
                         changes_detected.extend(form_changes)
                         
                         # Update form's last checked time
-                        form.last_checked = datetime.utcnow()
+                        form.last_checked = datetime.now(timezone.utc)
                         db.commit()
                 
                 # Update monitoring run
-                run.completed_at = datetime.utcnow()
+                run.completed_at = datetime.now(timezone.utc)
                 run.status = "completed"
                 run.changes_detected = len(changes_detected)
                 db.commit()
@@ -500,7 +500,7 @@ class AgencyMonitor:
                 agency_id=form.agency_id,
                 form_id=form.id,
                 status="completed",
-                completed_at=datetime.utcnow(),
+                completed_at=datetime.now(timezone.utc),
                 content_hash=content_hash,
                 http_status_code=status_code,
                 response_time_ms=int(metadata.get('response_time_ms', 0))
@@ -515,7 +515,7 @@ class AgencyMonitor:
                 agency_id=form.agency_id,
                 form_id=form.id,
                 status="failed",
-                completed_at=datetime.utcnow(),
+                completed_at=datetime.now(timezone.utc),
                 error_message=str(e),
                 http_status_code=0
             )

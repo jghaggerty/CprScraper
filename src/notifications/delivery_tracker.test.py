@@ -4,7 +4,7 @@ Unit tests for notification delivery tracking and retry mechanisms.
 
 import pytest
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from unittest.mock import Mock, patch, AsyncMock
 from typing import Dict, Any
 
@@ -294,7 +294,7 @@ class TestNotificationDeliveryTracker:
         expired_notification = Mock(spec=Notification)
         expired_notification.id = 123
         expired_notification.status = DeliveryStatus.PENDING.value
-        expired_notification.sent_at = datetime.utcnow() - timedelta(hours=25)
+        expired_notification.sent_at = datetime.now(timezone.utc) - timedelta(hours=25)
         
         mock_db_session.query.return_value.filter.return_value.all.return_value = [expired_notification]
         mock_get_db.return_value = iter([mock_db_session])

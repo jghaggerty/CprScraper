@@ -3,7 +3,7 @@ Unit tests for report customization system.
 """
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from unittest.mock import Mock, patch, MagicMock
 from typing import Dict, List, Any
 

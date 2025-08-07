@@ -5,7 +5,7 @@ Tests authentication, authorization, and role-based access control.
 
 import pytest
 import jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from unittest.mock import Mock, patch, MagicMock
 from sqlalchemy.orm import Session
 

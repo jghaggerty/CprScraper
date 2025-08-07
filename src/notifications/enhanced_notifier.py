@@ -9,7 +9,7 @@ preferences and delivery mechanisms.
 import asyncio
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Any
 from sqlalchemy.orm import Session
 
@@ -119,7 +119,7 @@ class EnhancedNotificationManager:
             # Prepare base notification data
             base_change_data = {
                 'detected_at': form_change.detected_at.strftime('%Y-%m-%d %H:%M:%S UTC'),
-                'generated_at': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC'),
+                'generated_at': datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC'),
                 'change_id': form_change.id,
                 'severity': form_change.severity,
                 'agency_name': agency.name,
@@ -369,7 +369,7 @@ class EnhancedNotificationManager:
     async def test_role_based_notifications(self) -> Dict[str, Any]:
         """Test role-based notification system."""
         test_data = {
-            'detected_at': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC'),
+            'detected_at': datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC'),
             'severity': 'medium',
             'agency_name': 'Test Agency',
             'form_name': 'TEST-001',

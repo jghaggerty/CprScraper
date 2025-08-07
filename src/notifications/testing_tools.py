@@ -9,7 +9,7 @@ import asyncio
 import json
 import logging
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass, asdict
 from enum import Enum
@@ -61,7 +61,7 @@ class TestResult:
     
     def __post_init__(self):
         if self.timestamp is None:
-            self.timestamp = datetime.utcnow()
+            self.timestamp = datetime.now(timezone.utc)
 
 
 @dataclass
@@ -201,7 +201,7 @@ class NotificationTestingTools:
                 'form_name': 'TEST-001',
                 'severity': 'medium',
                 'change_description': 'Test change description',
-                'detected_at': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC'),
+                'detected_at': datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC'),
                 'clients_impacted': 5,
                 'icp_percentage': 2.5,
                 'form_url': 'https://example.com/test-form',
@@ -308,7 +308,7 @@ class NotificationTestingTools:
                 status=DeliveryStatus.PENDING.value,
                 message_content='Test notification content',
                 recipient='test@example.com',
-                sent_at=datetime.utcnow()
+                sent_at=datetime.now(timezone.utc)
             )
             
             db.add(test_notification)
@@ -316,8 +316,8 @@ class NotificationTestingTools:
             
             # Test delivery tracking
             delivery_metrics = await self.delivery_tracker.get_delivery_metrics(
-                start_date=datetime.utcnow() - timedelta(hours=1),
-                end_date=datetime.utcnow()
+                start_date=datetime.now(timezone.utc) - timedelta(hours=1),
+                end_date=datetime.now(timezone.utc)
             )
             
             # Test retry mechanism
@@ -769,7 +769,7 @@ class NotificationTestingTools:
         report.append("=" * 60)
         report.append("NOTIFICATION SYSTEM TEST REPORT")
         report.append("=" * 60)
-        report.append(f"Generated: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}")
+        report.append(f"Generated: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}")
         report.append("")
         
         # Summary

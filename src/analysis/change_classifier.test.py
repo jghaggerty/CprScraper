@@ -7,7 +7,7 @@ compliance monitoring, including severity and type classification.
 
 import pytest
 from unittest.mock import Mock, patch
-from datetime import datetime
+from datetime import datetime, timezone
 
 from .change_classifier import (
     ChangeClassifier, ChangeSeverity, ChangeType, get_change_classifier

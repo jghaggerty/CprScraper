@@ -13,7 +13,7 @@ Tests the report export functionality including:
 
 import pytest
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from unittest.mock import Mock, patch, MagicMock
 from fastapi.testclient import TestClient
 

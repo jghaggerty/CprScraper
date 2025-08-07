@@ -12,7 +12,7 @@ agency monitoring.
 import pytest
 import asyncio
 from unittest.mock import Mock, AsyncMock, patch, MagicMock
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any
 
 from src.monitors.ai_enhanced_monitor import AIEnhancedMonitor, monitor_agency_with_ai
@@ -119,7 +119,7 @@ class TestAIEnhancedMonitor:
         mock_result = Mock(spec=AnalysisResponse)
         mock_result.analysis_id = "test_analysis_123"
         mock_result.has_meaningful_changes = True
-        mock_result.timestamp = datetime.utcnow()
+        mock_result.timestamp = datetime.now(timezone.utc)
         
         # Mock classification
         mock_classification = Mock()

@@ -9,7 +9,7 @@ import uuid
 import time
 import logging
 import asyncio
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import asdict
 
@@ -249,7 +249,7 @@ class AnalysisService:
             # Step 7: Create response
             response = AnalysisResponse(
                 analysis_id=analysis_id,
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
                 has_meaningful_changes=has_meaningful_changes,
                 classification=classification,
                 semantic_analysis=semantic_analysis,
@@ -345,7 +345,7 @@ class AnalysisService:
         
         batch_response = BatchAnalysisResponse(
             batch_id=batch_id,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             total_analyses=len(batch_request.analyses),
             successful_analyses=len(successful_results),
             failed_analyses=len(errors),
@@ -378,7 +378,7 @@ class AnalysisService:
             "service": "healthy",
             "semantic_analyzer": "unknown",
             "llm_classifier": "unknown",
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
         
         try:

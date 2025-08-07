@@ -4,6 +4,7 @@ import pytest
 from unittest.mock import patch, MagicMock
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from fastapi.testclient import TestClient
 
 # Add the project root to Python path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -17,13 +18,17 @@ os.environ["USE_TEST_DB"] = "true"
 # Import after setting environment variables
 try:
     from src.database.connection import engine, SessionLocal
-    from src.database.models import Base
+    from src.database.models import Base, User
+    from src.api.main import app
+    from src.auth.auth import get_current_user
 except ImportError as e:
     # If import fails, create mock objects for testing
     print(f"Warning: Could not import src modules: {e}")
     engine = None
     SessionLocal = None
     Base = None
+    app = None
+    get_current_user = None
 
 @pytest.fixture(scope="session")
 def test_engine():
@@ -57,3 +62,46 @@ def mock_database():
         mock_get_db.return_value.__enter__.return_value = mock_session
         mock_get_db.return_value.__exit__.return_value = None
         yield mock_session
+
+@pytest.fixture
+def test_client():
+    """Create a test client with authentication bypassed."""
+    if app is None:
+        return None
+    
+    # Override the get_current_user dependency for testing
+    def override_get_current_user():
+        """Override authentication for testing."""
+        mock_user = MagicMock(spec=User)
+        mock_user.id = 1
+        mock_user.username = "testuser"
+        mock_user.email = "test@example.com"
+        mock_user.first_name = "Test"
+        mock_user.last_name = "User"
+        mock_user.is_active = True
+        mock_user.is_superuser = True
+        return mock_user
+    
+    # Override the dependency
+    app.dependency_overrides[get_current_user] = override_get_current_user
+    
+    # Create test client
+    client = TestClient(app)
+    
+    yield client
+    
+    # Clean up dependency overrides
+    app.dependency_overrides.clear()
+
+@pytest.fixture
+def mock_user():
+    """Create a mock user for testing."""
+    mock_user = MagicMock(spec=User)
+    mock_user.id = 1
+    mock_user.username = "testuser"
+    mock_user.email = "test@example.com"
+    mock_user.first_name = "Test"
+    mock_user.last_name = "User"
+    mock_user.is_active = True
+    mock_user.is_superuser = True
+    return mock_user

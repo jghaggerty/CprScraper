@@ -9,7 +9,7 @@ import asyncio
 import logging
 import schedule
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Any
 from concurrent.futures import ThreadPoolExecutor
 import threading
@@ -245,7 +245,7 @@ class EnhancedMonitoringScheduler:
                     await self._send_ai_enhanced_notifications(form_id, result, db)
                     
                     # Update form's last checked time
-                    form.last_checked = datetime.utcnow()
+                    form.last_checked = datetime.now(timezone.utc)
                     db.commit()
                     
                     # Consider frequency adjustment based on activity
@@ -436,7 +436,7 @@ class EnhancedMonitoringScheduler:
                 "ai_service_health": ai_health,
                 "performance_stats": ai_stats,
                 "scheduler_stats": self.stats,
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }
             
             logger.info(f"AI performance report: {performance_report}")
@@ -517,7 +517,7 @@ class EnhancedMonitoringScheduler:
             (current_avg * (total_runs - 1) + processing_time_ms) / total_runs
         )
         
-        self.stats["last_run"] = datetime.utcnow()
+        self.stats["last_run"] = datetime.now(timezone.utc)
     
     def get_enhanced_schedule_status(self) -> Dict[str, Any]:
         """Get enhanced scheduler status with AI metrics."""

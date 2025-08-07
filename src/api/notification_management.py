@@ -5,7 +5,7 @@ This module provides comprehensive endpoints for managing notification history,
 including filtering, searching, bulk operations, and administrative functions.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Body
 from fastapi.responses import StreamingResponse
@@ -392,7 +392,7 @@ async def get_management_stats_summary(
         retrying_count = db.query(func.count(Notification.id)).filter(Notification.status == "retrying").scalar()
         
         # Get recent activity (last 24 hours)
-        yesterday = datetime.utcnow() - timedelta(days=1)
+        yesterday = datetime.now(timezone.utc) - timedelta(days=1)
         recent_count = db.query(func.count(Notification.id)).filter(Notification.sent_at >= yesterday).scalar()
         
         # Get average delivery time

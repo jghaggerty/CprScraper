@@ -5,7 +5,7 @@ Unit tests for the enhanced notification system with role-based notifications.
 import pytest
 import asyncio
 from unittest.mock import Mock, patch, AsyncMock
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List
 
 from src.notifications.enhanced_notifier import (
@@ -109,7 +109,7 @@ class TestEnhancedNotificationManager:
         mock_change.severity = 'medium'
         mock_change.change_type = 'content'
         mock_change.change_description = 'Test change description'
-        mock_change.detected_at = datetime.utcnow()
+        mock_change.detected_at = datetime.now(timezone.utc)
         mock_change.effective_date = None
         mock_change.old_value = 'old_value'
         mock_change.new_value = 'new_value'
@@ -433,7 +433,7 @@ class TestNotificationIntegration:
         mock_form_change.severity = 'high'
         mock_form_change.change_type = 'content'
         mock_form_change.change_description = 'Critical form update'
-        mock_form_change.detected_at = datetime.utcnow()
+        mock_form_change.detected_at = datetime.now(timezone.utc)
         mock_form_change.effective_date = None
         mock_form_change.ai_confidence_score = 95
         mock_form_change.ai_change_category = 'requirement_change'

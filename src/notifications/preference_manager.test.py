@@ -3,7 +3,7 @@ Unit tests for enhanced notification preference manager.
 """
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from unittest.mock import Mock, patch
 from typing import Dict, List, Any
 
@@ -262,8 +262,8 @@ class TestEnhancedNotificationPreferenceManager:
         mock_pref1.change_severity = 'all'
         mock_pref1.frequency = 'immediate'
         mock_pref1.is_enabled = True
-        mock_pref1.created_at = datetime.utcnow()
-        mock_pref1.updated_at = datetime.utcnow()
+        mock_pref1.created_at = datetime.now(timezone.utc)
+        mock_pref1.updated_at = datetime.now(timezone.utc)
         
         mock_pref2 = Mock()
         mock_pref2.id = 2
@@ -271,8 +271,8 @@ class TestEnhancedNotificationPreferenceManager:
         mock_pref2.change_severity = 'high'
         mock_pref2.frequency = 'daily'
         mock_pref2.is_enabled = False
-        mock_pref2.created_at = datetime.utcnow()
-        mock_pref2.updated_at = datetime.utcnow()
+        mock_pref2.created_at = datetime.now(timezone.utc)
+        mock_pref2.updated_at = datetime.now(timezone.utc)
         
         mock_session.query.return_value.filter.return_value.all.return_value = [mock_pref1, mock_pref2]
         
@@ -363,43 +363,43 @@ class TestEnhancedNotificationPreferenceManager:
     
     def test_check_frequency_timing_immediate(self, preference_manager):
         """Test frequency timing check for immediate."""
-        change_time = datetime.utcnow() - timedelta(minutes=30)
+        change_time = datetime.now(timezone.utc) - timedelta(minutes=30)
         result = preference_manager._check_frequency_timing('immediate', change_time)
         assert result is True
     
     def test_check_frequency_timing_hourly(self, preference_manager):
         """Test frequency timing check for hourly."""
         # Test within same hour
-        change_time = datetime.utcnow() - timedelta(minutes=30)
+        change_time = datetime.now(timezone.utc) - timedelta(minutes=30)
         result = preference_manager._check_frequency_timing('hourly', change_time)
         assert result is False
         
         # Test after an hour
-        change_time = datetime.utcnow() - timedelta(hours=2)
+        change_time = datetime.now(timezone.utc) - timedelta(hours=2)
         result = preference_manager._check_frequency_timing('hourly', change_time)
         assert result is True
     
     def test_check_frequency_timing_daily(self, preference_manager):
         """Test frequency timing check for daily."""
         # Test within same day
-        change_time = datetime.utcnow() - timedelta(hours=12)
+        change_time = datetime.now(timezone.utc) - timedelta(hours=12)
         result = preference_manager._check_frequency_timing('daily', change_time)
         assert result is False
         
         # Test after a day
-        change_time = datetime.utcnow() - timedelta(days=2)
+        change_time = datetime.now(timezone.utc) - timedelta(days=2)
         result = preference_manager._check_frequency_timing('daily', change_time)
         assert result is True
     
     def test_check_frequency_timing_weekly(self, preference_manager):
         """Test frequency timing check for weekly."""
         # Test within same week
-        change_time = datetime.utcnow() - timedelta(days=3)
+        change_time = datetime.now(timezone.utc) - timedelta(days=3)
         result = preference_manager._check_frequency_timing('weekly', change_time)
         assert result is False
         
         # Test after a week
-        change_time = datetime.utcnow() - timedelta(days=10)
+        change_time = datetime.now(timezone.utc) - timedelta(days=10)
         result = preference_manager._check_frequency_timing('weekly', change_time)
         assert result is True
     
@@ -564,8 +564,8 @@ class TestPreferenceManagerIntegration:
         mock_pref.change_severity = 'all'
         mock_pref.frequency = 'immediate'
         mock_pref.is_enabled = True
-        mock_pref.created_at = datetime.utcnow()
-        mock_pref.updated_at = datetime.utcnow()
+        mock_pref.created_at = datetime.now(timezone.utc)
+        mock_pref.updated_at = datetime.now(timezone.utc)
         
         mock_session.query.return_value.filter.return_value.all.return_value = [mock_pref]
         

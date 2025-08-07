@@ -2,7 +2,7 @@
 Authentication API endpoints for user management and role-based access control.
 """
 
-from datetime import timedelta
+from datetime import timedelta, timezone
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials

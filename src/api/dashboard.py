@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, or_, func, desc, asc
 from typing import List, Optional, Dict, Any
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from pydantic import BaseModel, Field
 import logging
 
@@ -135,7 +135,7 @@ async def get_dashboard_stats(db: Session = Depends(get_db)):
         ).count()
         
         # Get change statistics
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         changes_last_24h = db.query(FormChange).filter(
             FormChange.detected_at >= now - timedelta(days=1)
         ).count()
@@ -227,7 +227,7 @@ async def get_recent_changes(
             query = query.filter(FormChange.status == status)
         
         if days:
-            cutoff_date = datetime.utcnow() - timedelta(days=days)
+            cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
             query = query.filter(FormChange.detected_at >= cutoff_date)
         
         # Get results
@@ -276,7 +276,7 @@ async def get_agency_summaries(db: Session = Depends(get_db)):
                 )
             
             # Get changes in last week
-            week_ago = datetime.utcnow() - timedelta(days=7)
+            week_ago = datetime.now(timezone.utc) - timedelta(days=7)
             changes_last_week = db.query(FormChange).join(Form).filter(
                 and_(
                     Form.agency_id == agency.id,
@@ -286,7 +286,7 @@ async def get_agency_summaries(db: Session = Depends(get_db)):
             
             # Determine health status
             health_status = "healthy"
-            if not last_check or last_check < datetime.utcnow() - timedelta(days=7):
+            if not last_check or last_check < datetime.now(timezone.utc) - timedelta(days=7):
                 health_status = "warning"
             if changes_last_week > 10:  # High change volume
                 health_status = "alert"
@@ -340,7 +340,7 @@ async def get_form_summaries(
             form_status = "active" if form.is_active else "inactive"
             if not form.last_checked:
                 form_status = "never_checked"
-            elif form.last_checked < datetime.utcnow() - timedelta(days=30):
+            elif form.last_checked < datetime.now(timezone.utc) - timedelta(days=30):
                 form_status = "stale"
             
             summaries.append(FormSummary(
@@ -399,7 +399,7 @@ async def get_monitoring_health(db: Session = Depends(get_db)):
             "last_24h_checks": db.query(Form).filter(
                 and_(
                     Form.is_active == True,
-                    Form.last_checked >= datetime.utcnow() - timedelta(days=1)
+                    Form.last_checked >= datetime.now(timezone.utc) - timedelta(days=1)
                 )
             ).count()
         }
@@ -442,7 +442,7 @@ async def get_real_time_monitoring_status(db: Session = Depends(get_db)):
             recent_completed = db.query(MonitoringRun).filter(
                 and_(
                     MonitoringRun.status == "completed",
-                    MonitoringRun.completed_at >= datetime.utcnow() - timedelta(hours=6)
+                    MonitoringRun.completed_at >= datetime.now(timezone.utc) - timedelta(hours=6)
                 )
             ).order_by(desc(MonitoringRun.completed_at)).limit(20).all()
             
@@ -450,7 +450,7 @@ async def get_real_time_monitoring_status(db: Session = Depends(get_db)):
             failed_runs = db.query(MonitoringRun).filter(
                 and_(
                     MonitoringRun.status == "failed",
-                    MonitoringRun.created_at >= datetime.utcnow() - timedelta(hours=24)
+                    MonitoringRun.created_at >= datetime.now(timezone.utc) - timedelta(hours=24)
                 )
             ).order_by(desc(MonitoringRun.created_at)).limit(10).all()
             
@@ -459,7 +459,7 @@ async def get_real_time_monitoring_status(db: Session = Depends(get_db)):
             current_stats = await stats.get_comprehensive_statistics()
             
             return {
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
                 "active_runs": [
                     {
                         "id": run.id,
@@ -522,19 +522,19 @@ async def get_live_statistics(db: Session = Depends(get_db)):
         with get_db() as db:
             # Get changes in last hour
             changes_last_hour = db.query(FormChange).filter(
-                FormChange.detected_at >= datetime.utcnow() - timedelta(hours=1)
+                FormChange.detected_at >= datetime.now(timezone.utc) - timedelta(hours=1)
             ).count()
             
             # Get changes in last 15 minutes
             changes_last_15min = db.query(FormChange).filter(
-                FormChange.detected_at >= datetime.utcnow() - timedelta(minutes=15)
+                FormChange.detected_at >= datetime.now(timezone.utc) - timedelta(minutes=15)
             ).count()
             
             # Get critical changes in last hour
             critical_changes_hour = db.query(FormChange).filter(
                 and_(
                     FormChange.severity == "critical",
-                    FormChange.detected_at >= datetime.utcnow() - timedelta(hours=1)
+                    FormChange.detected_at >= datetime.now(timezone.utc) - timedelta(hours=1)
                 )
             ).count()
             
@@ -542,13 +542,13 @@ async def get_live_statistics(db: Session = Depends(get_db)):
             active_notifications = db.query(Notification).filter(
                 and_(
                     Notification.is_active == True,
-                    Notification.created_at >= datetime.utcnow() - timedelta(days=1)
+                    Notification.created_at >= datetime.now(timezone.utc) - timedelta(days=1)
                 )
             ).count()
             
             # Get system performance metrics
             recent_runs = db.query(MonitoringRun).filter(
-                MonitoringRun.completed_at >= datetime.utcnow() - timedelta(hours=1)
+                MonitoringRun.completed_at >= datetime.now(timezone.utc) - timedelta(hours=1)
             ).all()
             
             avg_processing_time = 0
@@ -561,7 +561,7 @@ async def get_live_statistics(db: Session = Depends(get_db)):
                 avg_processing_time = total_time / len(recent_runs)
         
         return {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "comprehensive_statistics": comprehensive_stats,
             "real_time_metrics": {
                 "changes_last_hour": changes_last_hour,
@@ -663,7 +663,7 @@ async def search_changes(
             if "date_range" in filters:
                 days = _parse_date_range(filters["date_range"])
                 if days:
-                    cutoff_date = datetime.utcnow() - timedelta(days=days)
+                    cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
                     query = query.filter(FormChange.detected_at >= cutoff_date)
             
             if "form_type" in filters:
@@ -740,7 +740,7 @@ async def get_active_alerts(db: Session = Depends(get_db)):
             failed_runs = db.query(MonitoringRun).filter(
                 and_(
                     MonitoringRun.status == "failed",
-                    MonitoringRun.created_at >= datetime.utcnow() - timedelta(hours=24)
+                    MonitoringRun.created_at >= datetime.now(timezone.utc) - timedelta(hours=24)
                 )
             ).order_by(desc(MonitoringRun.created_at)).limit(5).all()
             
@@ -846,7 +846,7 @@ async def get_historical_data(
     try:
         with get_db() as db:
             # Calculate date range based on period
-            end_date = datetime.utcnow()
+            end_date = datetime.now(timezone.utc)
             if request.period == "7d":
                 start_date = end_date - timedelta(days=7)
                 group_format = "%Y-%m-%d"
@@ -968,7 +968,7 @@ async def get_trends_summary(db: Session = Depends(get_db)):
     try:
         with get_db() as db:
             # Get trends for different metrics over the last 30 days
-            end_date = datetime.utcnow()
+            end_date = datetime.now(timezone.utc)
             start_date = end_date - timedelta(days=30)
             
             trends = {}
@@ -1062,7 +1062,7 @@ async def get_trends_summary(db: Session = Depends(get_db)):
                     "description": f"Response times are {'increasing' if response_trend > 5 else 'decreasing' if response_trend < -5 else 'stable'} by {abs(response_trend):.1f}%"
                 },
                 "period": "30 days",
-                "last_updated": datetime.utcnow().isoformat()
+                "last_updated": datetime.now(timezone.utc).isoformat()
             }
             
     except Exception as e:
@@ -1076,7 +1076,7 @@ async def get_agency_performance_analytics(db: Session = Depends(get_db)):
     try:
         with get_db() as db:
             # Get performance data for each agency
-            end_date = datetime.utcnow()
+            end_date = datetime.now(timezone.utc)
             start_date = end_date - timedelta(days=30)
             
             agency_performance = []
@@ -1177,7 +1177,7 @@ def _calculate_error_rate(db: Session) -> float:
     """Calculate the current error rate for monitoring runs."""
     try:
         total_runs = db.query(MonitoringRun).filter(
-            MonitoringRun.started_at >= datetime.utcnow() - timedelta(hours=24)
+            MonitoringRun.started_at >= datetime.now(timezone.utc) - timedelta(hours=24)
         ).count()
         
         if total_runs == 0:
@@ -1186,7 +1186,7 @@ def _calculate_error_rate(db: Session) -> float:
         failed_runs = db.query(MonitoringRun).filter(
             and_(
                 MonitoringRun.status == "failed",
-                MonitoringRun.started_at >= datetime.utcnow() - timedelta(hours=24)
+                MonitoringRun.started_at >= datetime.now(timezone.utc) - timedelta(hours=24)
             )
         ).count()
         

@@ -8,7 +8,7 @@ for daily/weekly monitoring based on form requirements.
 import pytest
 import asyncio
 from unittest.mock import Mock, AsyncMock, patch, MagicMock
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Dict, Any
 
 from .enhanced_scheduler import (
@@ -69,7 +69,7 @@ class TestEnhancedMonitoringScheduler:
         change.id = 1
         change.form_id = sample_form.id
         change.form = sample_form
-        change.detected_at = datetime.utcnow()
+        change.detected_at = datetime.now(timezone.utc)
         change.severity = "high"
         change.ai_confidence_score = 85
         change.ai_change_category = "form_update"

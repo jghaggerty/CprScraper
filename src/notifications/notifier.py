@@ -2,7 +2,7 @@ import asyncio
 import json
 import logging
 import smtplib
-from datetime import datetime
+from datetime import datetime, timezone
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from typing import Dict, List, Optional
@@ -212,7 +212,7 @@ class SlackNotifier:
                             }
                         ],
                         "footer": "Payroll Monitoring System",
-                        "ts": int(datetime.utcnow().timestamp())
+                        "ts": int(datetime.now(timezone.utc).timestamp())
                     }
                 ]
             }
@@ -457,7 +457,7 @@ class NotificationManager:
     async def test_notifications(self) -> Dict[str, bool]:
         """Test all configured notification channels."""
         test_data = {
-            'detected_at': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC'),
+            'detected_at': datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC'),
             'severity': 'low',
             'agency_name': 'Test Agency',
             'form_name': 'TEST-001',

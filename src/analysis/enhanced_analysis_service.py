@@ -9,7 +9,7 @@ import uuid
 import time
 import logging
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Any, Tuple, Set
 from dataclasses import asdict
 import re
@@ -737,7 +737,7 @@ class EnhancedAnalysisService(AnalysisService):
                 
                 return AnalysisResponse(
                     analysis_id=analysis_id,
-                    timestamp=datetime.utcnow(),
+                    timestamp=datetime.now(timezone.utc),
                     has_meaningful_changes=False,
                     classification=ChangeClassification(
                         category="cosmetic_change",

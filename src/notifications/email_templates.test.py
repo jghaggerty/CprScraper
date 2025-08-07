@@ -20,7 +20,7 @@ except ImportError:
     print("\nFor detailed instructions, see: FIX_PYTEST_IMPORT.md")
     raise
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any
 
 from src.notifications.email_templates import EnhancedEmailTemplates

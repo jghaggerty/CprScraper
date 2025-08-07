@@ -5,7 +5,7 @@ Unit tests for notification channel integration module.
 import pytest
 import asyncio
 from unittest.mock import Mock, patch, AsyncMock
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List
 
 from src.notifications.channel_integration import (

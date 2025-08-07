@@ -10,7 +10,7 @@ Enhanced with comprehensive support for all 50 states plus federal agencies.
 
 import logging
 import asyncio
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import asdict
 
@@ -119,7 +119,7 @@ class AIEnhancedMonitor:
         Returns:
             Dictionary containing monitoring results and AI analysis summary
         """
-        start_time = datetime.utcnow()
+        start_time = datetime.now(timezone.utc)
         
         # Start monitoring session for statistics tracking
         session_id = await self.monitoring_stats.start_monitoring_session()
@@ -172,16 +172,16 @@ class AIEnhancedMonitor:
                     active_forms = [f for f in agency.forms if f.is_active]
                     
                     # Record performance metric for agency monitoring
-                    agency_start_time = datetime.utcnow()
+                    agency_start_time = datetime.now(timezone.utc)
                     
                     for i in range(0, len(active_forms), self.batch_size):
                         batch = active_forms[i:i + self.batch_size]
-                        batch_start_time = datetime.utcnow()
+                        batch_start_time = datetime.now(timezone.utc)
                         
                         batch_results = await self._process_form_batch(batch, scraper, db)
                         
                         # Record batch performance metric
-                        batch_processing_time = int((datetime.utcnow() - batch_start_time).total_seconds() * 1000)
+                        batch_processing_time = int((datetime.now(timezone.utc) - batch_start_time).total_seconds() * 1000)
                         await record_monitoring_event("performance", 
                                                     operation_type="form_batch_processing",
                                                     processing_time_ms=batch_processing_time,
@@ -226,7 +226,7 @@ class AIEnhancedMonitor:
                                                                 error_severity=error.get("severity", "low"))
                     
                     # Record overall agency monitoring performance
-                    agency_processing_time = int((datetime.utcnow() - agency_start_time).total_seconds() * 1000)
+                    agency_processing_time = int((datetime.now(timezone.utc) - agency_start_time).total_seconds() * 1000)
                     await record_monitoring_event("performance",
                                                 operation_type="agency_monitoring",
                                                 processing_time_ms=agency_processing_time,
@@ -239,7 +239,7 @@ class AIEnhancedMonitor:
                                                 })
                 
                 # Update monitoring run
-                monitoring_run.completed_at = datetime.utcnow()
+                monitoring_run.completed_at = datetime.now(timezone.utc)
                 monitoring_run.status = "completed"
                 monitoring_run.changes_detected = results["changes_detected"]
                 db.commit()
@@ -263,7 +263,7 @@ class AIEnhancedMonitor:
                 
                 monitoring_run.status = "failed"
                 monitoring_run.error_message = error_msg
-                monitoring_run.completed_at = datetime.utcnow()
+                monitoring_run.completed_at = datetime.now(timezone.utc)
                 db.commit()
         
         return results
@@ -369,7 +369,7 @@ class AIEnhancedMonitor:
                 logger.debug(f"No previous content found for {form.name} - storing baseline")
             
             # Update form's last checked time and store current content
-            form.last_checked = datetime.utcnow()
+            form.last_checked = datetime.now(timezone.utc)
             await self._store_current_content(form.id, content)
             
             # Create monitoring run record for this form
@@ -377,7 +377,7 @@ class AIEnhancedMonitor:
                 agency_id=form.agency_id,
                 form_id=form.id,
                 status="completed",
-                completed_at=datetime.utcnow(),
+                completed_at=datetime.now(timezone.utc),
                 content_hash=scraper.calculate_content_hash(content),
                 http_status_code=status_code
             )
@@ -455,7 +455,7 @@ class AIEnhancedMonitor:
             )
             
             # Perform analysis with timing
-            start_time = datetime.utcnow()
+            start_time = datetime.now(timezone.utc)
             
             # Use enhanced analysis if available, fallback to standard
             if hasattr(self.analysis_service, 'analyze_document_changes_enhanced'):
@@ -467,7 +467,7 @@ class AIEnhancedMonitor:
                 analysis_type = "standard_analysis"
                 logger.info(f"Standard AI analysis completed for form {form.name}")
             
-            processing_time = datetime.utcnow() - start_time
+            processing_time = datetime.now(timezone.utc) - start_time
             processing_time_ms = int(processing_time.total_seconds() * 1000)
             
             # Record AI analysis metric
@@ -641,7 +641,7 @@ class AIEnhancedMonitor:
                 "classification_method": classification_result.get("classification_method", "ai_only") if classification_result else "ai_only",
                 "enhanced_classification": classification_result is not None
             },
-            ai_analysis_timestamp=datetime.utcnow(),
+            ai_analysis_timestamp=datetime.now(timezone.utc),
             is_cosmetic_change=is_cosmetic
         )
         
@@ -761,7 +761,7 @@ class AIEnhancedMonitor:
         Returns:
             Dictionary containing comprehensive monitoring results
         """
-        start_time = datetime.utcnow()
+        start_time = datetime.now(timezone.utc)
         
         # Start comprehensive monitoring session
         session_id = await self.monitoring_stats.start_monitoring_session()
@@ -771,7 +771,7 @@ class AIEnhancedMonitor:
                 "error": "Configuration manager not available",
                 "session_id": session_id,
                 "started_at": start_time.isoformat(),
-                "completed_at": datetime.utcnow().isoformat()
+                "completed_at": datetime.now(timezone.utc).isoformat()
             }
         
         results = {
@@ -802,7 +802,7 @@ class AIEnhancedMonitor:
             
             async with WebScraper() as scraper:
                 for batch in batches:
-                    batch_start = datetime.utcnow()
+                    batch_start = datetime.now(timezone.utc)
                     
                     # Process forms in batch
                     batch_results = await self._process_comprehensive_batch(batch, scraper)
@@ -814,7 +814,7 @@ class AIEnhancedMonitor:
                     results["changes_detected"] += batch_results.get("changes_detected", 0)
                     results["ai_analyses_performed"] += batch_results.get("ai_analyses_performed", 0)
                     
-                    batch_time = (datetime.utcnow() - batch_start).total_seconds() * 1000
+                    batch_time = (datetime.now(timezone.utc) - batch_start).total_seconds() * 1000
                     total_processing_time += batch_time
                     
                     logger.info(f"Batch {batch['batch_id']} completed in {batch_time:.2f}ms")
@@ -834,7 +834,7 @@ class AIEnhancedMonitor:
             }
             
             # Record comprehensive monitoring performance
-            comprehensive_processing_time = int((datetime.utcnow() - start_time).total_seconds() * 1000)
+            comprehensive_processing_time = int((datetime.now(timezone.utc) - start_time).total_seconds() * 1000)
             await record_monitoring_event("performance",
                                         operation_type="comprehensive_monitoring",
                                         processing_time_ms=comprehensive_processing_time,
@@ -888,7 +888,7 @@ class AIEnhancedMonitor:
             results["recommendations"].append(f"Fix comprehensive monitoring: {e}")
         
         finally:
-            results["completed_at"] = datetime.utcnow()
+            results["completed_at"] = datetime.now(timezone.utc)
             # WebScraper cleanup is handled by its async context manager
         
         return results

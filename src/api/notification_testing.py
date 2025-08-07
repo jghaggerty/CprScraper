@@ -8,7 +8,7 @@ including running test suites, individual tests, and viewing test results.
 import asyncio
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Any
 from fastapi import APIRouter, Depends, HTTPException, Query, Body, BackgroundTasks
 from fastapi.responses import StreamingResponse
@@ -50,7 +50,7 @@ class NotificationTestingAPI:
                 "success": True,
                 "message": "Comprehensive test suite completed",
                 "results": results,
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }
             
         except Exception as e:
@@ -100,7 +100,7 @@ class NotificationTestingAPI:
                     "error_message": result.error_message,
                     "timestamp": result.timestamp.isoformat()
                 },
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }
             
         except Exception as e:
@@ -225,7 +225,7 @@ class NotificationTestingAPI:
                     for result in results
                 ],
                 "report": scenario_report,
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }
             
         except Exception as e:
@@ -261,7 +261,7 @@ class NotificationTestingAPI:
                     ch for ch, status in channel_status.items() 
                     if status.get('configured', False)
                 ],
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }
             
         except Exception as e:
@@ -287,7 +287,7 @@ class NotificationTestingAPI:
                     duration=result_dict.get('duration', 0.0),
                     details=result_dict.get('details', {}),
                     error_message=result_dict.get('error_message'),
-                    timestamp=datetime.fromisoformat(result_dict.get('timestamp', datetime.utcnow().isoformat()))
+                    timestamp=datetime.fromisoformat(result_dict.get('timestamp', datetime.now(timezone.utc).isoformat()))
                 )
                 results.append(result)
             
@@ -297,7 +297,7 @@ class NotificationTestingAPI:
                     "success": True,
                     "format": "text",
                     "report": report,
-                    "timestamp": datetime.utcnow().isoformat()
+                    "timestamp": datetime.now(timezone.utc).isoformat()
                 }
             elif format == "json":
                 return {
@@ -324,7 +324,7 @@ class NotificationTestingAPI:
                         ],
                         "recommendations": testing_tools._generate_recommendations(results)
                     },
-                    "timestamp": datetime.utcnow().isoformat()
+                    "timestamp": datetime.now(timezone.utc).isoformat()
                 }
             else:  # HTML format
                 html_report = await testing_tools.generate_html_report(results)
@@ -332,7 +332,7 @@ class NotificationTestingAPI:
                     "success": True,
                     "format": "html",
                     "report": html_report,
-                    "timestamp": datetime.utcnow().isoformat()
+                    "timestamp": datetime.now(timezone.utc).isoformat()
                 }
                 
         except Exception as e:
@@ -407,7 +407,7 @@ class NotificationTestingAPI:
             return {
                 "success": True,
                 "validation": validation_results,
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }
             
         except Exception as e:
@@ -435,7 +435,7 @@ class NotificationTestingAPI:
                 "total_count": 0,
                 "limit": limit,
                 "offset": offset,
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }
             
         except Exception as e:
@@ -457,7 +457,7 @@ class NotificationTestingAPI:
             return {
                 "success": True,
                 "message": "Test data cleared successfully",
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }
             
         except Exception as e:

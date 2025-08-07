@@ -7,7 +7,7 @@ AI analysis tracking, error monitoring, and historical trend analysis.
 
 import pytest
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from unittest.mock import patch, MagicMock, AsyncMock
 from collections import defaultdict
 
@@ -468,7 +468,7 @@ class TestMonitoringStatistics:
         assert stats._calculate_session_duration() is None
         
         # Start session
-        stats.monitoring_start_time = datetime.utcnow() - timedelta(minutes=30)
+        stats.monitoring_start_time = datetime.now(timezone.utc) - timedelta(minutes=30)
         duration = stats._calculate_session_duration()
         assert duration is not None
         assert duration > 29  # Should be around 30 minutes

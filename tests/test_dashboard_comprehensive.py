@@ -11,7 +11,7 @@ This test file completes subtask 2.9 by providing comprehensive coverage for:
 import pytest
 import json
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from unittest.mock import Mock, patch, AsyncMock, MagicMock
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
@@ -55,7 +55,7 @@ class TestDashboardAPIComprehensive:
         form.name = "WH-347"
         form.title = "Statement of Compliance"
         form.is_active = True
-        form.last_checked = datetime.utcnow() - timedelta(hours=1)
+        form.last_checked = datetime.now(timezone.utc) - timedelta(hours=1)
         form.agency = agency
         
         change = Mock(spec=FormChange)
@@ -64,7 +64,7 @@ class TestDashboardAPIComprehensive:
         change.change_type = "content"
         change.severity = "high"
         change.status = "detected"
-        change.detected_at = datetime.utcnow() - timedelta(hours=2)
+        change.detected_at = datetime.now(timezone.utc) - timedelta(hours=2)
         change.ai_confidence_score = 85
         change.ai_change_category = "form_update"
         
@@ -172,8 +172,8 @@ class TestDashboardAPIComprehensive:
             # Mock monitoring runs
             mock_run = Mock(spec=MonitoringRun)
             mock_run.id = 1
-            mock_run.started_at = datetime.utcnow() - timedelta(hours=1)
-            mock_run.completed_at = datetime.utcnow() - timedelta(minutes=30)
+            mock_run.started_at = datetime.now(timezone.utc) - timedelta(hours=1)
+            mock_run.completed_at = datetime.now(timezone.utc) - timedelta(minutes=30)
             mock_run.status = "completed"
             mock_run.response_time_ms = 1500
             
@@ -307,7 +307,7 @@ class TestExportFunctionalityComprehensive:
                 'id': 1,
                 'form_name': 'WH-347',
                 'severity': 'high',
-                'detected_at': datetime.utcnow(),
+                'detected_at': datetime.now(timezone.utc),
                 'status': 'detected'
             }
         ]
@@ -330,7 +330,7 @@ class TestExportFunctionalityComprehensive:
                 'id': 1,
                 'form_name': 'WH-347',
                 'severity': 'high',
-                'detected_at': datetime.utcnow(),
+                'detected_at': datetime.now(timezone.utc),
                 'status': 'detected'
             }
         ]
@@ -352,7 +352,7 @@ class TestExportFunctionalityComprehensive:
                 'id': 1,
                 'form_name': 'WH-347',
                 'severity': 'high',
-                'detected_at': datetime.utcnow(),
+                'detected_at': datetime.now(timezone.utc),
                 'status': 'detected'
             }
         ]

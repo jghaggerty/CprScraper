@@ -7,7 +7,7 @@ managers to ensure proper functionality and edge case handling.
 
 import pytest
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from unittest.mock import Mock, AsyncMock, patch
 from sqlalchemy.orm import Session
 

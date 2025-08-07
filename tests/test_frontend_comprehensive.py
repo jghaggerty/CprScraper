@@ -15,7 +15,7 @@ import pytest
 import json
 import asyncio
 from unittest.mock import Mock, patch, AsyncMock, MagicMock
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 
 # Mock browser environment
 class MockWebSocket:

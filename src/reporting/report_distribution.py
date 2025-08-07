@@ -6,7 +6,7 @@ with role-specific content, formatting, and delivery channels.
 """
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass
 import asyncio

@@ -12,7 +12,7 @@ Provides WebSocket endpoints for real-time updates including:
 import asyncio
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Any, Set
 from fastapi import WebSocket, WebSocketDisconnect, APIRouter, Depends
 from fastapi.responses import JSONResponse
@@ -45,8 +45,8 @@ class ConnectionManager:
         self.active_connections.add(websocket)
         self.connection_metadata[websocket] = {
             "client_type": client_type,
-            "connected_at": datetime.utcnow(),
-            "last_activity": datetime.utcnow()
+            "connected_at": datetime.now(timezone.utc),
+            "last_activity": datetime.now(timezone.utc)
         }
         logger.info(f"WebSocket connected: {client_type} (total: {len(self.active_connections)})")
         
@@ -72,7 +72,7 @@ class ConnectionManager:
             # Send initial data
             initial_data = {
                 "type": "initial_data",
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
                 "statistics": stats,
                 "monitoring_status": monitoring_status,
                 "system_health": await self.get_system_health()
@@ -94,7 +94,7 @@ class ConnectionManager:
         for connection in self.active_connections:
             try:
                 await connection.send_text(message_json)
-                self.connection_metadata[connection]["last_activity"] = datetime.utcnow()
+                self.connection_metadata[connection]["last_activity"] = datetime.now(timezone.utc)
             except Exception as e:
                 logger.error(f"Error broadcasting to connection: {e}")
                 disconnected.add(connection)
@@ -109,7 +109,7 @@ class ConnectionManager:
             stats = await self.stats.get_comprehensive_statistics()
             await self.broadcast({
                 "type": "statistics_update",
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
                 "data": stats
             })
         except Exception as e:
@@ -119,7 +119,7 @@ class ConnectionManager:
         """Broadcast monitoring status update."""
         await self.broadcast({
             "type": "monitoring_status",
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "data": status
         })
     
@@ -127,7 +127,7 @@ class ConnectionManager:
         """Broadcast when a new change is detected."""
         await self.broadcast({
             "type": "change_detected",
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "data": change
         })
     
@@ -135,7 +135,7 @@ class ConnectionManager:
         """Broadcast a new alert."""
         await self.broadcast({
             "type": "alert",
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "data": alert
         })
     
@@ -143,7 +143,7 @@ class ConnectionManager:
         """Broadcast system health update."""
         await self.broadcast({
             "type": "system_health",
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "data": health
         })
     
@@ -153,7 +153,7 @@ class ConnectionManager:
             with get_db() as db:
                 # Get recent monitoring runs
                 recent_runs = db.query(MonitoringRun).filter(
-                    MonitoringRun.created_at >= datetime.utcnow() - timedelta(hours=24)
+                    MonitoringRun.created_at >= datetime.now(timezone.utc) - timedelta(hours=24)
                 ).order_by(MonitoringRun.created_at.desc()).limit(10).all()
                 
                 # Get active runs
@@ -180,7 +180,7 @@ class ConnectionManager:
                     ],
                     "active_runs": len(active_runs),
                     "scheduler_status": scheduler_status,
-                    "last_update": datetime.utcnow().isoformat()
+                    "last_update": datetime.now(timezone.utc).isoformat()
                 }
         except Exception as e:
             logger.error(f"Error getting monitoring status: {e}")
@@ -193,7 +193,7 @@ class ConnectionManager:
             health = {
                 "overall_status": "healthy",
                 "services": {},
-                "last_check": datetime.utcnow().isoformat()
+                "last_check": datetime.now(timezone.utc).isoformat()
             }
             
             # Check database connection
@@ -247,13 +247,13 @@ async def websocket_endpoint(websocket: WebSocket):
             
             # Update last activity
             if websocket in manager.connection_metadata:
-                manager.connection_metadata[websocket]["last_activity"] = datetime.utcnow()
+                manager.connection_metadata[websocket]["last_activity"] = datetime.now(timezone.utc)
             
             # Handle client requests
             if message.get("type") == "request_update":
                 await handle_client_request(websocket, message)
             elif message.get("type") == "ping":
-                await websocket.send_text(json.dumps({"type": "pong", "timestamp": datetime.utcnow().isoformat()}))
+                await websocket.send_text(json.dumps({"type": "pong", "timestamp": datetime.now(timezone.utc).isoformat()}))
                 
     except WebSocketDisconnect:
         manager.disconnect(websocket)
@@ -270,7 +270,7 @@ async def handle_client_request(websocket: WebSocket, message: Dict[str, Any]):
             stats = await manager.stats.get_comprehensive_statistics()
             await websocket.send_text(json.dumps({
                 "type": "statistics_response",
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
                 "data": stats
             }))
         
@@ -278,7 +278,7 @@ async def handle_client_request(websocket: WebSocket, message: Dict[str, Any]):
             status = await manager.get_current_monitoring_status()
             await websocket.send_text(json.dumps({
                 "type": "monitoring_status_response",
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
                 "data": status
             }))
         
@@ -286,7 +286,7 @@ async def handle_client_request(websocket: WebSocket, message: Dict[str, Any]):
             health = await manager.get_system_health()
             await websocket.send_text(json.dumps({
                 "type": "system_health_response",
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
                 "data": health
             }))
         
@@ -294,7 +294,7 @@ async def handle_client_request(websocket: WebSocket, message: Dict[str, Any]):
             changes = await get_recent_changes_for_realtime()
             await websocket.send_text(json.dumps({
                 "type": "recent_changes_response",
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
                 "data": changes
             }))
         
@@ -302,7 +302,7 @@ async def handle_client_request(websocket: WebSocket, message: Dict[str, Any]):
             alerts = await get_active_alerts_for_realtime()
             await websocket.send_text(json.dumps({
                 "type": "active_alerts_response",
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
                 "data": alerts
             }))
             
@@ -310,7 +310,7 @@ async def handle_client_request(websocket: WebSocket, message: Dict[str, Any]):
         logger.error(f"Error handling client request: {e}")
         await websocket.send_text(json.dumps({
             "type": "error",
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "error": str(e)
         }))
 
@@ -319,7 +319,7 @@ async def get_recent_changes_for_realtime() -> List[Dict[str, Any]]:
     try:
         with get_db() as db:
             recent_changes = db.query(FormChange).filter(
-                FormChange.detected_at >= datetime.utcnow() - timedelta(hours=24)
+                FormChange.detected_at >= datetime.now(timezone.utc) - timedelta(hours=24)
             ).order_by(FormChange.detected_at.desc()).limit(20).all()
             
             return [
@@ -347,7 +347,7 @@ async def get_active_alerts_for_realtime() -> List[Dict[str, Any]]:
             active_alerts = db.query(Notification).filter(
                 and_(
                     Notification.is_active == True,
-                    Notification.created_at >= datetime.utcnow() - timedelta(days=7)
+                    Notification.created_at >= datetime.now(timezone.utc) - timedelta(days=7)
                 )
             ).order_by(Notification.created_at.desc()).limit(10).all()
             
@@ -399,6 +399,6 @@ async def broadcast_monitoring_event(event_type: str, data: Dict[str, Any]):
     """Broadcast a monitoring event to all connected clients."""
     await manager.broadcast({
         "type": event_type,
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "data": data
     }) 

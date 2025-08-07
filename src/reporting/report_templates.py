@@ -6,7 +6,7 @@ in a well-structured, professional format suitable for different audiences.
 """
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 from jinja2 import Template
 

@@ -2,7 +2,7 @@
 API endpoints for notification delivery tracking and management.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
@@ -220,7 +220,7 @@ async def get_notification_stats_summary(
             status_counts[status.value] = count
         
         # Get recent activity (last 24 hours)
-        cutoff_time = datetime.utcnow() - timedelta(hours=24)
+        cutoff_time = datetime.now(timezone.utc) - timedelta(hours=24)
         recent_count = db.query(Notification).filter(
             Notification.sent_at >= cutoff_time
         ).count()

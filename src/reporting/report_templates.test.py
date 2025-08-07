@@ -3,7 +3,7 @@ Unit tests for report templates.
 """
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Any
 
 from src.reporting.report_templates import (

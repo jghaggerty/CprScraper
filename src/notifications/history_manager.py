@@ -7,7 +7,7 @@ including filtering, searching, bulk operations, and administrative functions.
 
 import asyncio
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Any, Optional, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, desc, asc, func
@@ -472,7 +472,7 @@ class NotificationHistoryManager:
                 "notification_id": notification_id,
                 "status": "cancelled",
                 "cancelled_by": user.username,
-                "cancelled_at": datetime.utcnow().isoformat()
+                "cancelled_at": datetime.now(timezone.utc).isoformat()
             }
         except Exception as e:
             logger.error(f"Error cancelling notification {notification_id}: {str(e)}")
@@ -692,7 +692,7 @@ class NotificationHistoryManager:
         return {
             "format": "csv",
             "data": output.getvalue(),
-            "filename": f"notification_history_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
+            "filename": f"notification_history_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.csv"
         }
     
     async def _generate_json_export(self, data: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -702,7 +702,7 @@ class NotificationHistoryManager:
         return {
             "format": "json",
             "data": json.dumps(data, indent=2, default=str),
-            "filename": f"notification_history_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.json"
+            "filename": f"notification_history_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.json"
         }
     
     async def _generate_excel_export(self, data: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -724,7 +724,7 @@ class NotificationHistoryManager:
             return {
                 "format": "excel",
                 "data": output.getvalue(),
-                "filename": f"notification_history_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.xlsx"
+                "filename": f"notification_history_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.xlsx"
             }
         except ImportError:
             raise ValueError("pandas and openpyxl are required for Excel export") 

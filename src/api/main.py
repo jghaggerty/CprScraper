@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from typing import List, Optional, Dict
 import logging
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 
 from ..database.connection import get_db, init_db
 from ..database.models import Agency, Form, FormChange, MonitoringRun, Notification
@@ -326,13 +326,13 @@ async def get_monitoring_stats():
         active_forms = db.query(Form).filter(Form.is_active == True).count()
         
         # Changes in last 24 hours
-        yesterday = datetime.utcnow() - timedelta(days=1)
+        yesterday = datetime.now(timezone.utc) - timedelta(days=1)
         changes_24h = db.query(FormChange).filter(
             FormChange.detected_at >= yesterday
         ).count()
         
         # Changes in last week
-        week_ago = datetime.utcnow() - timedelta(days=7)
+        week_ago = datetime.now(timezone.utc) - timedelta(days=7)
         changes_week = db.query(FormChange).filter(
             FormChange.detected_at >= week_ago
         ).count()
@@ -432,7 +432,7 @@ async def get_activity_stats():
         changes_detected = []
         
         for i in range(29, -1, -1):
-            date = datetime.utcnow().date() - timedelta(days=i)
+            date = datetime.now(timezone.utc).date() - timedelta(days=i)
             dates.append(date.strftime('%Y-%m-%d'))
             
             # Count monitoring runs for this date
@@ -515,7 +515,7 @@ async def test_notifications():
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
-    return {"status": "healthy", "timestamp": datetime.utcnow()}
+    return {"status": "healthy", "timestamp": datetime.now(timezone.utc)}
 
 if __name__ == "__main__":
     import uvicorn

@@ -8,7 +8,7 @@ predictive insights, and performance metrics.
 
 import logging
 import statistics
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Tuple, Any, Union
 from collections import defaultdict, Counter
 import pandas as pd

@@ -2,7 +2,7 @@
 Pydantic models for AI analysis requests and responses.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any, Literal
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 
@@ -67,10 +67,10 @@ class LLMAnalysis(BaseModel):
 class AnalysisResponse(BaseModel):
     """Response model for document change analysis."""
     
-    model_config = ConfigDict(from_attributes=True, json_encoders={datetime: lambda v: v.isoformat()})
+    model_config = ConfigDict(from_attributes=True)
     
     analysis_id: str = Field(..., description="Unique identifier for this analysis")
-    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Analysis timestamp")
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Analysis timestamp")
     
     # Core results
     has_meaningful_changes: bool = Field(..., description="Whether meaningful changes were detected")
@@ -88,12 +88,12 @@ class AnalysisResponse(BaseModel):
 class AnalysisError(BaseModel):
     """Error response model for analysis failures."""
     
-    model_config = ConfigDict(from_attributes=True, json_encoders={datetime: lambda v: v.isoformat()})
+    model_config = ConfigDict(from_attributes=True)
     
     error_code: str = Field(..., description="Error code")
     error_message: str = Field(..., description="Human-readable error message")
     details: Optional[Dict[str, Any]] = Field(None, description="Additional error details")
-    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Error timestamp")
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Error timestamp")
     analysis_id: Optional[str] = Field(None, description="Analysis ID if available")
 
 
@@ -114,10 +114,10 @@ class BatchAnalysisRequest(BaseModel):
 class BatchAnalysisResponse(BaseModel):
     """Response model for batch analysis."""
     
-    model_config = ConfigDict(from_attributes=True, json_encoders={datetime: lambda v: v.isoformat()})
+    model_config = ConfigDict(from_attributes=True)
     
     batch_id: str = Field(..., description="Batch identifier")
-    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Batch processing timestamp")
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Batch processing timestamp")
     total_analyses: int = Field(..., description="Total number of analyses requested")
     successful_analyses: int = Field(..., description="Number of successful analyses")
     failed_analyses: int = Field(..., description="Number of failed analyses")

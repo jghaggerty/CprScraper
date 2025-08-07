@@ -8,7 +8,7 @@ classification to categorize changes accurately.
 
 import re
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any, Tuple
 from enum import Enum
 
@@ -235,7 +235,7 @@ class ChangeClassifier:
                 "compliance_impact_score": compliance_impact,
                 "is_cosmetic": is_cosmetic,
                 "reasoning": reasoning,
-                "classification_timestamp": datetime.utcnow().isoformat(),
+                "classification_timestamp": datetime.now(timezone.utc).isoformat(),
                 "classification_method": "rule_based"
             }
             
@@ -417,7 +417,7 @@ class ChangeClassifier:
             "compliance_impact_score": 5,
             "is_cosmetic": False,
             "reasoning": "Default classification due to analysis error",
-            "classification_timestamp": datetime.utcnow().isoformat(),
+            "classification_timestamp": datetime.now(timezone.utc).isoformat(),
             "classification_method": "default"
         }
     
@@ -475,7 +475,7 @@ class ChangeClassifier:
             enhanced_result["ai_reasoning"] = ai_reasoning
         
         enhanced_result["classification_method"] = "hybrid"
-        enhanced_result["ai_enhancement_timestamp"] = datetime.utcnow().isoformat()
+        enhanced_result["ai_enhancement_timestamp"] = datetime.now(timezone.utc).isoformat()
         
         return enhanced_result
     

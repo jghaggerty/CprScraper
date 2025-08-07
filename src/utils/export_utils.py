@@ -10,7 +10,7 @@ Provides functionality to export filtered dashboard data in multiple formats:
 import csv
 import io
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Any, Optional, Union
 from pathlib import Path
 import logging

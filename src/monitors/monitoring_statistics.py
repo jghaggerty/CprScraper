@@ -8,7 +8,7 @@ AI-powered compliance monitoring system.
 
 import logging
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, asdict
 from enum import Enum
@@ -176,7 +176,7 @@ class MonitoringStatistics:
         Returns:
             Session ID for tracking this monitoring run
         """
-        self.monitoring_start_time = datetime.utcnow()
+        self.monitoring_start_time = datetime.now(timezone.utc)
         session_id = f"session_{self.monitoring_start_time.strftime('%Y%m%d_%H%M%S')}"
         
         logger.info(f"Started monitoring session: {session_id}")
@@ -194,7 +194,7 @@ class MonitoringStatistics:
             processing_time_ms: Processing time in milliseconds
             additional_data: Additional performance data
         """
-        timestamp = datetime.utcnow()
+        timestamp = datetime.now(timezone.utc)
         
         # Update current metrics
         metrics = self.current_metrics[MetricType.PERFORMANCE]
@@ -240,7 +240,7 @@ class MonitoringStatistics:
             enhanced_features: List of enhanced features used
             model_version: Version of the AI model used
         """
-        timestamp = datetime.utcnow()
+        timestamp = datetime.now(timezone.utc)
         
         # Update current metrics
         metrics = self.current_metrics[MetricType.AI_ANALYSIS]
@@ -300,7 +300,7 @@ class MonitoringStatistics:
             retry_attempts: Number of retry attempts made
             circuit_breaker_tripped: Whether circuit breaker was triggered
         """
-        timestamp = datetime.utcnow()
+        timestamp = datetime.now(timezone.utc)
         
         # Update current metrics
         metrics = self.current_metrics[MetricType.ERROR_RATES]
@@ -417,7 +417,7 @@ class MonitoringStatistics:
         if total_agencies > 0:
             metrics.coverage_percentage = (active_agencies / total_agencies) * 100
         
-        metrics.last_comprehensive_run = datetime.utcnow()
+        metrics.last_comprehensive_run = datetime.now(timezone.utc)
         
         logger.debug(f"Updated coverage metrics: {active_agencies}/{total_agencies} agencies active")
     
@@ -454,11 +454,11 @@ class MonitoringStatistics:
         metrics.system_load_avg = system_load
         metrics.memory_usage_percentage = memory_usage
         metrics.disk_usage_percentage = disk_usage
-        metrics.last_health_check = datetime.utcnow()
+        metrics.last_health_check = datetime.now(timezone.utc)
         
         # Calculate uptime percentage (simplified)
         if self.monitoring_start_time:
-            total_time = datetime.utcnow() - self.monitoring_start_time
+            total_time = datetime.now(timezone.utc) - self.monitoring_start_time
             # This is a simplified calculation - in practice you'd track actual downtime
             metrics.service_uptime_percentage = 99.5  # Placeholder
         
@@ -471,7 +471,7 @@ class MonitoringStatistics:
         Returns:
             Dictionary containing all current metrics and historical analysis
         """
-        self.last_metrics_update = datetime.utcnow()
+        self.last_metrics_update = datetime.now(timezone.utc)
         
         # Calculate historical trends
         historical_trends = await self._calculate_historical_trends()
@@ -555,7 +555,7 @@ class MonitoringStatistics:
                 # Change statistics
                 total_changes = db.query(FormChange).count()
                 recent_changes = db.query(FormChange).filter(
-                    FormChange.detected_at >= datetime.utcnow() - timedelta(days=7)
+                    FormChange.detected_at >= datetime.now(timezone.utc) - timedelta(days=7)
                 ).count()
                 
                 # Monitoring run statistics
@@ -640,7 +640,7 @@ class MonitoringStatistics:
     def _calculate_session_duration(self) -> Optional[float]:
         """Calculate monitoring session duration in minutes."""
         if self.monitoring_start_time:
-            duration = datetime.utcnow() - self.monitoring_start_time
+            duration = datetime.now(timezone.utc) - self.monitoring_start_time
             return duration.total_seconds() / 60
         return None
     

@@ -7,7 +7,7 @@ including test execution, result retrieval, and system status monitoring.
 
 import pytest
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import Mock, patch, AsyncMock
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
@@ -70,7 +70,7 @@ class TestNotificationTestingAPI:
                     'duration': 2.0,
                     'details': {},
                     'error_message': None,
-                    'timestamp': datetime.utcnow().isoformat()
+                    'timestamp': datetime.now(timezone.utc).isoformat()
                 }
             ],
             'recommendations': ['Check notification channel configurations']
@@ -299,7 +299,7 @@ class TestNotificationTestingAPI:
                 'duration': 1.5,
                 'details': {},
                 'error_message': None,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
         ]
         
@@ -327,7 +327,7 @@ class TestNotificationTestingAPI:
                 'duration': 1.5,
                 'details': {},
                 'error_message': None,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
         ]
         

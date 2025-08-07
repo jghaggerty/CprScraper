@@ -17,7 +17,7 @@ import smtplib
 import ftplib
 import os
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Any, Callable
 from pathlib import Path
 from email.mime.multipart import MIMEMultipart

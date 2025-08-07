@@ -8,7 +8,7 @@ semantic change detection, and content relevance validation.
 import pytest
 import asyncio
 from unittest.mock import Mock, patch, AsyncMock
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any
 
 from src.analysis.enhanced_analysis_service import EnhancedAnalysisService
@@ -255,7 +255,7 @@ class TestEnhancedAnalysisService:
         # Mock the parent class method
         mock_parent_response = AnalysisResponse(
             analysis_id="test_id",
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             has_meaningful_changes=True,
             classification=ChangeClassification(
                 category="requirement_change",
@@ -307,7 +307,7 @@ class TestEnhancedAnalysisService:
     def test_track_analysis_history(self, enhanced_service):
         """Test analysis history tracking."""
         mock_result = Mock()
-        mock_result.timestamp = datetime.utcnow()
+        mock_result.timestamp = datetime.now(timezone.utc)
         mock_result.has_meaningful_changes = True
         mock_result.confidence_breakdown = {"overall": 85, "false_positive_score": 0.1}
         mock_result.processing_summary = {"false_positive_detected": False}

@@ -2,7 +2,7 @@ import asyncio
 import logging
 import schedule
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional
 from concurrent.futures import ThreadPoolExecutor
 import threading
@@ -193,7 +193,7 @@ class MonitoringScheduler:
             
             with get_db() as db:
                 # Get monitoring runs from the last 24 hours
-                yesterday = datetime.utcnow() - timedelta(days=1)
+                yesterday = datetime.now(timezone.utc) - timedelta(days=1)
                 
                 recent_runs = db.query(MonitoringRun).filter(
                     MonitoringRun.started_at >= yesterday
@@ -205,7 +205,7 @@ class MonitoringScheduler:
                 ).all()
                 
                 summary = {
-                    'date': datetime.utcnow().strftime('%Y-%m-%d'),
+                    'date': datetime.now(timezone.utc).strftime('%Y-%m-%d'),
                     'monitoring_runs': len(recent_runs),
                     'successful_runs': len([r for r in recent_runs if r.status == 'completed']),
                     'failed_runs': len([r for r in recent_runs if r.status == 'failed']),
@@ -227,7 +227,7 @@ class MonitoringScheduler:
             
             with get_db() as db:
                 # Get data from the last 7 days
-                week_ago = datetime.utcnow() - timedelta(days=7)
+                week_ago = datetime.now(timezone.utc) - timedelta(days=7)
                 
                 weekly_runs = db.query(MonitoringRun).filter(
                     MonitoringRun.started_at >= week_ago
@@ -261,7 +261,7 @@ class MonitoringScheduler:
                         agency_stats[agency_name]['changes'] += 1
                 
                 report = {
-                    'week_ending': datetime.utcnow().strftime('%Y-%m-%d'),
+                    'week_ending': datetime.now(timezone.utc).strftime('%Y-%m-%d'),
                     'total_monitoring_runs': len(weekly_runs),
                     'total_changes_detected': len(weekly_changes),
                     'agency_statistics': agency_stats
@@ -281,7 +281,7 @@ class MonitoringScheduler:
             
             with get_db() as db:
                 # Remove monitoring runs older than 90 days
-                cutoff_date = datetime.utcnow() - timedelta(days=90)
+                cutoff_date = datetime.now(timezone.utc) - timedelta(days=90)
                 
                 old_runs = db.query(MonitoringRun).filter(
                     MonitoringRun.started_at < cutoff_date
@@ -295,7 +295,7 @@ class MonitoringScheduler:
                     logger.info(f"Cleaned up {old_runs} old monitoring runs")
                 
                 # Remove old notifications (older than 180 days)
-                notification_cutoff = datetime.utcnow() - timedelta(days=180)
+                notification_cutoff = datetime.now(timezone.utc) - timedelta(days=180)
                 
                 old_notifications = db.query(Notification).filter(
                     Notification.sent_at < notification_cutoff

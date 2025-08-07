@@ -16,7 +16,7 @@ import tempfile
 import shutil
 import os
 from unittest.mock import Mock, AsyncMock, patch, MagicMock
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from sqlalchemy.orm import Session
 

@@ -6,7 +6,7 @@ granular frequency settings and role-specific preferences for different user rol
 """
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Any, Set
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
@@ -298,7 +298,7 @@ class EnhancedNotificationPreferenceManager:
                     existing_pref.change_severity = change_severity
                     existing_pref.frequency = frequency
                     existing_pref.is_enabled = is_enabled
-                    existing_pref.updated_at = datetime.utcnow()
+                    existing_pref.updated_at = datetime.now(timezone.utc)
                 else:
                     new_pref = UserNotificationPreference(
                         user_id=user_id,
@@ -427,7 +427,7 @@ class EnhancedNotificationPreferenceManager:
     
     def _check_frequency_timing(self, frequency: str, change_time: datetime) -> bool:
         """Check if notification timing matches frequency requirements."""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         
         if frequency == NotificationFrequency.IMMEDIATE:
             return True
@@ -536,7 +536,7 @@ class EnhancedNotificationPreferenceManager:
                         existing_pref.change_severity = pref_data.get('change_severity')
                         existing_pref.frequency = pref_data.get('frequency', 'daily')
                         existing_pref.is_enabled = pref_data.get('is_enabled', True)
-                        existing_pref.updated_at = datetime.utcnow()
+                        existing_pref.updated_at = datetime.now(timezone.utc)
                     else:
                         new_pref = UserNotificationPreference(
                             user_id=user_id,
@@ -591,7 +591,7 @@ class EnhancedNotificationPreferenceManager:
                 from ..database.models import Notification
                 
                 # Get notifications sent to this user in the last N days
-                cutoff_date = datetime.utcnow() - timedelta(days=days)
+                cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
                 
                 notifications = session.query(Notification).filter(
                     and_(

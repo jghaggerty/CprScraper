@@ -3,7 +3,7 @@ Unit tests for report distribution system.
 """
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from unittest.mock import Mock, patch, AsyncMock
 from typing import Dict, List, Any
 

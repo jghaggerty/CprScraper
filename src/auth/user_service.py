@@ -6,7 +6,7 @@ Handles authentication, authorization, and user preferences for Product Managers
 import hashlib
 import secrets
 import jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Optional, List, Dict, Any
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, or_
@@ -38,9 +38,9 @@ class UserService:
         """Create a JWT access token."""
         to_encode = data.copy()
         if expires_delta:
-            expire = datetime.utcnow() + expires_delta
+            expire = datetime.now(timezone.utc) + expires_delta
         else:
-            expire = datetime.utcnow() + timedelta(minutes=self.access_token_expire_minutes)
+            expire = datetime.now(timezone.utc) + timedelta(minutes=self.access_token_expire_minutes)
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
         return encoded_jwt
@@ -67,7 +67,7 @@ class UserService:
                 return None
             
             # Update last login
-            user.last_login = datetime.utcnow()
+            user.last_login = datetime.now(timezone.utc)
             session.commit()
             
             return user
@@ -241,7 +241,7 @@ class UserService:
             
             if existing_pref:
                 existing_pref.preference_value = preference_value
-                existing_pref.updated_at = datetime.utcnow()
+                existing_pref.updated_at = datetime.now(timezone.utc)
             else:
                 new_pref = UserDashboardPreference(
                     user_id=user_id,
@@ -278,7 +278,7 @@ class UserService:
                 existing_pref.change_severity = change_severity
                 existing_pref.frequency = frequency
                 existing_pref.is_enabled = is_enabled
-                existing_pref.updated_at = datetime.utcnow()
+                existing_pref.updated_at = datetime.now(timezone.utc)
             else:
                 new_pref = UserNotificationPreference(
                     user_id=user_id,

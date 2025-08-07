@@ -8,7 +8,7 @@ and live statistics functionality.
 import pytest
 import asyncio
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from unittest.mock import Mock, AsyncMock, patch, MagicMock
 from fastapi.testclient import TestClient
 from fastapi import WebSocket
@@ -189,18 +189,21 @@ class TestWebSocketEndpoint:
         mock_websocket.accept = AsyncMock()
         mock_websocket.send_text = AsyncMock()
         
-        # Simulate ping message
-        mock_websocket.receive_text = AsyncMock(return_value=json.dumps({"type": "ping"}))
+        # Simulate ping message followed by disconnect
+        mock_websocket.receive_text = AsyncMock(side_effect=[
+            json.dumps({"type": "ping"}),
+            Exception("Test disconnect")  # This will cause the function to exit
+        ])
         
         # Reset manager for clean test
         manager.active_connections.clear()
         manager.connection_metadata.clear()
         
-        # Start the endpoint but limit execution time
+        # Run the endpoint - it should process the ping and then exit due to disconnect
         try:
-            await asyncio.wait_for(websocket_endpoint(mock_websocket), timeout=0.1)
-        except asyncio.TimeoutError:
-            pass  # Expected timeout
+            await websocket_endpoint(mock_websocket)
+        except Exception:
+            pass  # Expected due to our mock disconnect
         
         # Verify pong was sent
         pong_calls = [call for call in mock_websocket.send_text.call_args_list 
@@ -291,7 +294,7 @@ class TestRealtimeDataFunctions:
             mock_change.change_type = "content_update"
             mock_change.severity = "high"
             mock_change.status = "new"
-            mock_change.detected_at = datetime.utcnow()
+            mock_change.detected_at = datetime.now(timezone.utc)
             mock_change.ai_confidence_score = 85
             mock_change.ai_change_category = "regulatory"
             
@@ -319,7 +322,7 @@ class TestRealtimeDataFunctions:
             mock_alert.type = "critical"
             mock_alert.message = "Test alert"
             mock_alert.severity = "high"
-            mock_alert.created_at = datetime.utcnow()
+            mock_alert.created_at = datetime.now(timezone.utc)
             mock_alert.is_read = False
             
             mock_db.query.return_value.filter.return_value.order_by.return_value.limit.return_value.all.return_value = [mock_alert]

@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Tuple
 import pandas as pd
 from sqlalchemy import func
@@ -278,7 +278,7 @@ class ImpactAnalyzer:
         # Timeline risk
         effective_date = form_change.effective_date
         if effective_date:
-            days_until_effective = (effective_date - datetime.utcnow()).days
+            days_until_effective = (effective_date - datetime.now(timezone.utc)).days
             if days_until_effective < 30:
                 risks.append({
                     'category': 'Timeline',
@@ -299,7 +299,7 @@ class ImpactAnalyzer:
         # Historical risk (based on previous changes for this form/agency)
         recent_changes = db.query(FormChange).filter(
             FormChange.form_id == form_change.form_id,
-            FormChange.detected_at >= datetime.utcnow() - timedelta(days=180),
+            FormChange.detected_at >= datetime.now(timezone.utc) - timedelta(days=180),
             FormChange.id != form_change.id
         ).count()
         
@@ -351,7 +351,7 @@ class ImpactAnalyzer:
         phases = dev_impact['phase_breakdown']
         phase_timeline = {}
         
-        current_date = datetime.utcnow().date()
+        current_date = datetime.now(timezone.utc).date()
         for phase, config in phases.items():
             phase_hours = config['max_hours'] * risk_multiplier.get(risk_level, 1.2)
             phase_days = max(1, round(phase_hours / 6))
@@ -569,7 +569,7 @@ class ImpactAnalyzer:
         # Timeline recommendations
         effective_date = form_change.effective_date
         if effective_date:
-            days_until_effective = (effective_date - datetime.utcnow()).days
+            days_until_effective = (effective_date - datetime.now(timezone.utc)).days
             if days_until_effective < 45:
                 recommendations.append(
                     'Expedite development schedule due to tight timeline'

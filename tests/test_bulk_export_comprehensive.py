@@ -18,7 +18,7 @@ import asyncio
 import json
 from unittest.mock import Mock, AsyncMock, patch, MagicMock
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from sqlalchemy.orm import Session
 
 # Import modules under test

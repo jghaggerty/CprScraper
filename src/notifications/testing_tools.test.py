@@ -7,7 +7,7 @@ and related functionality.
 
 import pytest
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from unittest.mock import Mock, patch, AsyncMock, MagicMock
 from typing import Dict, List, Any
 
@@ -46,7 +46,7 @@ class TestNotificationTestingTools:
             'form_name': 'TEST-001',
             'severity': 'medium',
             'change_description': 'Test change description',
-            'detected_at': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC'),
+            'detected_at': datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC'),
             'clients_impacted': 5,
             'icp_percentage': 2.5,
             'form_url': 'https://example.com/test-form',

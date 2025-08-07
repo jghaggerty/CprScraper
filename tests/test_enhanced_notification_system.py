@@ -16,7 +16,7 @@ import pytest
 import asyncio
 import json
 from unittest.mock import Mock, patch, AsyncMock, MagicMock
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Any
 from sqlalchemy.orm import Session
 

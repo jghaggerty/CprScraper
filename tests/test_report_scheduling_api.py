@@ -7,15 +7,15 @@ Tests the API endpoints for scheduling automated report generation and delivery.
 import pytest
 import json
 from datetime import datetime, timedelta
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, AsyncMock
 from fastapi.testclient import TestClient
 
 from src.api.report_scheduling import router
 from src.reporting.report_scheduler import ScheduleType, TriggerType, ScheduleConfig
 from src.reporting.report_customization import ReportCustomizationOptions
 
-# Create test client
-client = TestClient(router)
+# Import test client from conftest
+from tests.conftest import test_client
 
 
 class TestReportSchedulingAPI:
@@ -56,7 +56,7 @@ class TestReportSchedulingAPI:
     
     @patch('src.api.report_scheduling.get_current_user')
     @patch('src.api.report_scheduling.get_report_scheduler')
-    def test_create_schedule_success(self, mock_get_scheduler, mock_get_user):
+    def test_create_schedule_success(self, mock_get_scheduler, mock_get_user, test_client):
         """Test successful schedule creation."""
         # Mock user
         mock_user = MagicMock()
@@ -85,7 +85,7 @@ class TestReportSchedulingAPI:
         mock_scheduler.create_schedule.return_value = mock_schedule
         mock_get_scheduler.return_value = mock_scheduler
         
-        response = client.post("/schedules", json=self.sample_schedule_request)
+        response = test_client.post("/api/reports/scheduling/schedules", json=self.sample_schedule_request)
         
         assert response.status_code == 200
         data = response.json()
@@ -95,7 +95,7 @@ class TestReportSchedulingAPI:
     
     @patch('src.api.report_scheduling.get_current_user')
     @patch('src.api.report_scheduling.get_report_scheduler')
-    def test_create_schedule_invalid_type(self, mock_get_scheduler, mock_get_user):
+    def test_create_schedule_invalid_type(self, mock_get_scheduler, mock_get_user, test_client):
         """Test schedule creation with invalid schedule type."""
         # Mock user
         mock_user = MagicMock()
@@ -110,14 +110,14 @@ class TestReportSchedulingAPI:
         invalid_request = self.sample_schedule_request.copy()
         invalid_request["schedule_type"] = "invalid_type"
         
-        response = client.post("/schedules", json=invalid_request)
+        response = test_client.post("/api/reports/scheduling/schedules", json=invalid_request)
         
         assert response.status_code == 500
         assert "Failed to create schedule" in response.json()["detail"]
     
     @patch('src.api.report_scheduling.get_current_user')
     @patch('src.api.report_scheduling.get_report_scheduler')
-    def test_get_schedules_success(self, mock_get_scheduler, mock_get_user):
+    def test_get_schedules_success(self, mock_get_scheduler, mock_get_user, test_client):
         """Test successful retrieval of schedules."""
         # Mock user
         mock_user = MagicMock()
@@ -146,7 +146,7 @@ class TestReportSchedulingAPI:
         mock_scheduler.get_all_schedules.return_value = {"Weekly Executive Summary": mock_schedule}
         mock_get_scheduler.return_value = mock_scheduler
         
-        response = client.get("/schedules")
+        response = test_client.get("/api/reports/scheduling/schedules")
         
         assert response.status_code == 200
         data = response.json()
@@ -155,7 +155,7 @@ class TestReportSchedulingAPI:
     
     @patch('src.api.report_scheduling.get_current_user')
     @patch('src.api.report_scheduling.get_report_scheduler')
-    def test_get_schedule_by_id_success(self, mock_get_scheduler, mock_get_user):
+    def test_get_schedule_by_id_success(self, mock_get_scheduler, mock_get_user, test_client):
         """Test successful retrieval of a specific schedule."""
         # Mock user
         mock_user = MagicMock()
@@ -184,7 +184,7 @@ class TestReportSchedulingAPI:
         mock_scheduler.get_schedule.return_value = mock_schedule
         mock_get_scheduler.return_value = mock_scheduler
         
-        response = client.get("/schedules/Weekly Executive Summary")
+        response = test_client.get("/api/reports/scheduling/schedules/Weekly Executive Summary")
         
         assert response.status_code == 200
         data = response.json()
@@ -193,7 +193,7 @@ class TestReportSchedulingAPI:
     
     @patch('src.api.report_scheduling.get_current_user')
     @patch('src.api.report_scheduling.get_report_scheduler')
-    def test_get_schedule_by_id_not_found(self, mock_get_scheduler, mock_get_user):
+    def test_get_schedule_by_id_not_found(self, mock_get_scheduler, mock_get_user, test_client):
         """Test retrieval of non-existent schedule."""
         # Mock user
         mock_user = MagicMock()
@@ -205,14 +205,14 @@ class TestReportSchedulingAPI:
         mock_scheduler.get_schedule.return_value = None
         mock_get_scheduler.return_value = mock_scheduler
         
-        response = client.get("/schedules/nonexistent")
+        response = test_client.get("/api/reports/scheduling/schedules/nonexistent")
         
         assert response.status_code == 404
         assert "Schedule not found" in response.json()["detail"]
     
     @patch('src.api.report_scheduling.get_current_user')
     @patch('src.api.report_scheduling.get_report_scheduler')
-    def test_update_schedule_success(self, mock_get_scheduler, mock_get_user):
+    def test_update_schedule_success(self, mock_get_scheduler, mock_get_user, test_client):
         """Test successful schedule update."""
         # Mock user
         mock_user = MagicMock()
@@ -249,7 +249,7 @@ class TestReportSchedulingAPI:
             "delivery_channels": ["email"]
         }
         
-        response = client.put("/schedules/Weekly Executive Summary", json=update_request)
+        response = test_client.put("/api/reports/scheduling/schedules/Weekly Executive Summary", json=update_request)
         
         assert response.status_code == 200
         data = response.json()
@@ -258,7 +258,7 @@ class TestReportSchedulingAPI:
     
     @patch('src.api.report_scheduling.get_current_user')
     @patch('src.api.report_scheduling.get_report_scheduler')
-    def test_delete_schedule_success(self, mock_get_scheduler, mock_get_user):
+    def test_delete_schedule_success(self, mock_get_scheduler, mock_get_user, test_client):
         """Test successful schedule deletion."""
         # Mock user
         mock_user = MagicMock()
@@ -270,14 +270,14 @@ class TestReportSchedulingAPI:
         mock_scheduler.delete_schedule.return_value = True
         mock_get_scheduler.return_value = mock_scheduler
         
-        response = client.delete("/schedules/Weekly Executive Summary")
+        response = test_client.delete("/api/reports/scheduling/schedules/Weekly Executive Summary")
         
         assert response.status_code == 200
         assert "deleted successfully" in response.json()["message"]
     
     @patch('src.api.report_scheduling.get_current_user')
     @patch('src.api.report_scheduling.get_report_scheduler')
-    def test_execute_schedule_success(self, mock_get_scheduler, mock_get_user):
+    def test_execute_schedule_success(self, mock_get_scheduler, mock_get_user, test_client):
         """Test successful schedule execution."""
         # Mock user
         mock_user = MagicMock()
@@ -296,10 +296,10 @@ class TestReportSchedulingAPI:
         mock_execution.error_message = None
         mock_execution.execution_duration_seconds = 2.5
         
-        mock_scheduler.execute_schedule.return_value = mock_execution
+        mock_scheduler.execute_schedule = AsyncMock(return_value=mock_execution)
         mock_get_scheduler.return_value = mock_scheduler
         
-        response = client.post("/schedules/Weekly Executive Summary/execute")
+        response = test_client.post("/api/reports/scheduling/schedules/Weekly Executive Summary/execute")
         
         assert response.status_code == 200
         data = response.json()
@@ -309,7 +309,7 @@ class TestReportSchedulingAPI:
     
     @patch('src.api.report_scheduling.get_current_user')
     @patch('src.api.report_scheduling.get_report_scheduler')
-    def test_create_weekly_schedule_success(self, mock_get_scheduler, mock_get_user):
+    def test_create_weekly_schedule_success(self, mock_get_scheduler, mock_get_user, test_client):
         """Test successful weekly schedule creation."""
         # Mock user
         mock_user = MagicMock()
@@ -338,7 +338,7 @@ class TestReportSchedulingAPI:
         mock_scheduler.create_weekly_schedule.return_value = mock_schedule
         mock_get_scheduler.return_value = mock_scheduler
         
-        response = client.post("/schedules/weekly?name=Weekly Report&day_of_week=0&hour=9&minute=0&timezone=America/New_York&target_roles=product_manager&delivery_channels=email")
+        response = test_client.post("/api/reports/scheduling/schedules/weekly?name=Weekly Report&day_of_week=0&hour=9&minute=0&timezone=America/New_York&target_roles=product_manager&delivery_channels=email")
         
         assert response.status_code == 200
         data = response.json()
@@ -347,7 +347,7 @@ class TestReportSchedulingAPI:
     
     @patch('src.api.report_scheduling.get_current_user')
     @patch('src.api.report_scheduling.get_report_scheduler')
-    def test_create_daily_schedule_success(self, mock_get_scheduler, mock_get_user):
+    def test_create_daily_schedule_success(self, mock_get_scheduler, mock_get_user, test_client):
         """Test successful daily schedule creation."""
         # Mock user
         mock_user = MagicMock()
@@ -376,7 +376,7 @@ class TestReportSchedulingAPI:
         mock_scheduler.create_daily_schedule.return_value = mock_schedule
         mock_get_scheduler.return_value = mock_scheduler
         
-        response = client.post("/schedules/daily?name=Daily Report&hour=9&minute=0&timezone=America/New_York&target_roles=product_manager&delivery_channels=email")
+        response = test_client.post("/api/reports/scheduling/schedules/daily?name=Daily Report&hour=9&minute=0&timezone=America/New_York&target_roles=product_manager&delivery_channels=email")
         
         assert response.status_code == 200
         data = response.json()
@@ -385,7 +385,7 @@ class TestReportSchedulingAPI:
     
     @patch('src.api.report_scheduling.get_current_user')
     @patch('src.api.report_scheduling.get_report_scheduler')
-    def test_get_execution_history_success(self, mock_get_scheduler, mock_get_user):
+    def test_get_execution_history_success(self, mock_get_scheduler, mock_get_user, test_client):
         """Test successful execution history retrieval."""
         # Mock user
         mock_user = MagicMock()
@@ -407,7 +407,7 @@ class TestReportSchedulingAPI:
         mock_scheduler.get_execution_history.return_value = [mock_execution]
         mock_get_scheduler.return_value = mock_scheduler
         
-        response = client.get("/schedules/Weekly Executive Summary/history?limit=10")
+        response = test_client.get("/api/reports/scheduling/schedules/Weekly Executive Summary/history?limit=10")
         
         assert response.status_code == 200
         data = response.json()
@@ -417,7 +417,7 @@ class TestReportSchedulingAPI:
     
     @patch('src.api.report_scheduling.get_current_user')
     @patch('src.api.report_scheduling.get_report_scheduler')
-    def test_get_schedule_statistics_success(self, mock_get_scheduler, mock_get_user):
+    def test_get_schedule_statistics_success(self, mock_get_scheduler, mock_get_user, test_client):
         """Test successful schedule statistics retrieval."""
         # Mock user
         mock_user = MagicMock()
@@ -439,7 +439,7 @@ class TestReportSchedulingAPI:
         mock_scheduler.get_schedule_statistics.return_value = mock_stats
         mock_get_scheduler.return_value = mock_scheduler
         
-        response = client.get("/schedules/Weekly Executive Summary/statistics")
+        response = test_client.get("/api/reports/scheduling/schedules/Weekly Executive Summary/statistics")
         
         assert response.status_code == 200
         data = response.json()
@@ -449,7 +449,7 @@ class TestReportSchedulingAPI:
     
     @patch('src.api.report_scheduling.get_current_user')
     @patch('src.api.report_scheduling.get_report_scheduler')
-    def test_run_due_schedules_success(self, mock_get_scheduler, mock_get_user):
+    def test_run_due_schedules_success(self, mock_get_scheduler, mock_get_user, test_client):
         """Test successful execution of due schedules."""
         # Mock user
         mock_user = MagicMock()
@@ -463,10 +463,10 @@ class TestReportSchedulingAPI:
         mock_execution.status = "success"
         mock_execution.execution_time = datetime.now()
         
-        mock_scheduler.run_due_schedules.return_value = [mock_execution]
+        mock_scheduler.run_due_schedules = AsyncMock(return_value=[mock_execution])
         mock_get_scheduler.return_value = mock_scheduler
         
-        response = client.post("/schedules/run-due")
+        response = test_client.post("/api/reports/scheduling/schedules/run-due")
         
         assert response.status_code == 200
         data = response.json()
@@ -503,13 +503,20 @@ def test_schedule_response_validation():
     
     # Valid response
     valid_response = ScheduleResponse(
-        schedule_id="test-schedule",
-        name="Test Schedule",
-        schedule_type="cron",
-        is_active=True,
-        timezone="UTC",
-        status="active"
-    )
+            schedule_id="test-schedule",
+            name="Test Schedule",
+            description="Test description",
+            schedule_type="cron",
+            is_active=True,
+            timezone="UTC",
+            next_run="2024-01-15T09:00:00",
+            last_run="2024-01-08T09:00:00",
+            created_at="2024-01-01T00:00:00",
+            target_roles=["admin"],
+            target_users=[1, 2],
+            delivery_channels=["email"],
+            status="active"
+        )
     assert valid_response.schedule_id == "test-schedule"
     assert valid_response.name == "Test Schedule"
 

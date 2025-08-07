@@ -4,7 +4,7 @@ Tests widget data loading, rendering, and interaction features.
 """
 import pytest
 from unittest.mock import Mock, patch, MagicMock
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from sqlalchemy.orm import Session
 from src.api.dashboard import router as dashboard_router
 from fastapi.testclient import TestClient

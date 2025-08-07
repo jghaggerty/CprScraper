@@ -9,7 +9,7 @@ optimization, and comprehensive reporting.
 import os
 import yaml
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Any, Tuple, Set
 from pathlib import Path
 from dataclasses import dataclass
@@ -76,14 +76,14 @@ class EnhancedConfigManager:
     
     def _load_config(self) -> None:
         """Load and validate the configuration."""
-        start_time = datetime.utcnow()
+        start_time = datetime.now(timezone.utc)
         
         try:
             self.config = load_agency_config(self.config_path)
             self._validate_comprehensive_coverage()
             self._calculate_coverage_metrics()
             
-            load_time = (datetime.utcnow() - start_time).total_seconds() * 1000
+            load_time = (datetime.now(timezone.utc) - start_time).total_seconds() * 1000
             self.performance_stats["config_load_time_ms"] = load_time
             
             logger.info(f"Enhanced configuration loaded successfully in {load_time:.2f}ms")
@@ -199,7 +199,7 @@ class EnhancedConfigManager:
             active_federal_agencies=len(federal_agencies),
             active_forms=active_forms,
             coverage_percentage=coverage_percentage,
-            last_updated=datetime.utcnow(),
+            last_updated=datetime.now(timezone.utc),
             status=status
         )
     
@@ -366,12 +366,12 @@ class EnhancedConfigManager:
         Returns:
             Dictionary containing health check results
         """
-        start_time = datetime.utcnow()
+        start_time = datetime.now(timezone.utc)
         health_status = {
             "overall_status": "unknown",
             "checks": {},
             "recommendations": [],
-            "last_check": datetime.utcnow().isoformat()
+            "last_check": datetime.now(timezone.utc).isoformat()
         }
         
         try:
@@ -422,9 +422,9 @@ class EnhancedConfigManager:
                 health_status["overall_status"] = "unhealthy"
             
             # Update performance stats
-            validation_time = (datetime.utcnow() - start_time).total_seconds() * 1000
+            validation_time = (datetime.now(timezone.utc) - start_time).total_seconds() * 1000
             self.performance_stats["validation_time_ms"] = validation_time
-            self.performance_stats["last_health_check"] = datetime.utcnow()
+            self.performance_stats["last_health_check"] = datetime.now(timezone.utc)
             self.performance_stats["health_status"] = health_status["overall_status"]
             
         except Exception as e:

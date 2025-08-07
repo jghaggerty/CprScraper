@@ -7,7 +7,7 @@ including delivery status tracking, automatic retries, and delivery analytics.
 
 import asyncio
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Any, Tuple
 from enum import Enum
 from dataclasses import dataclass
@@ -257,7 +257,7 @@ class NotificationDeliveryTracker:
         notification = db.query(Notification).filter(Notification.id == notification_id).first()
         if notification:
             notification.status = status.value
-            notification.sent_at = datetime.utcnow()
+            notification.sent_at = datetime.now(timezone.utc)
             
             if 'delivery_time' in kwargs:
                 notification.delivery_time = kwargs['delivery_time']
@@ -351,7 +351,7 @@ class NotificationDeliveryTracker:
         db = next(get_db())
         
         try:
-            cutoff_time = datetime.utcnow() - timedelta(hours=max_age_hours)
+            cutoff_time = datetime.now(timezone.utc) - timedelta(hours=max_age_hours)
             
             expired_notifications = db.query(Notification).filter(
                 and_(
