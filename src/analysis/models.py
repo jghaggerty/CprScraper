@@ -4,7 +4,7 @@ Pydantic models for AI analysis requests and responses.
 
 from datetime import datetime
 from typing import Dict, List, Optional, Any, Literal
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 
 
 class AnalysisRequest(BaseModel):
@@ -42,7 +42,7 @@ class ChangeClassification(BaseModel):
 class SemanticAnalysis(BaseModel):
     """Semantic similarity analysis results."""
     
-    model_config = {"protected_namespaces": ()}
+    model_config = ConfigDict(protected_namespaces=(), from_attributes=True)
     
     similarity_score: int = Field(..., ge=0, le=100, description="Semantic similarity percentage")
     significant_differences: List[str] = Field(default_factory=list, description="List of significant differences found")
@@ -54,7 +54,7 @@ class SemanticAnalysis(BaseModel):
 class LLMAnalysis(BaseModel):
     """LLM-based analysis results."""
     
-    model_config = {"protected_namespaces": ()}
+    model_config = ConfigDict(protected_namespaces=(), from_attributes=True)
     
     reasoning: str = Field(..., description="Detailed explanation of the analysis")
     key_changes: List[str] = Field(default_factory=list, description="List of key changes identified")
@@ -66,6 +66,8 @@ class LLMAnalysis(BaseModel):
 
 class AnalysisResponse(BaseModel):
     """Response model for document change analysis."""
+    
+    model_config = ConfigDict(from_attributes=True, json_encoders={datetime: lambda v: v.isoformat()})
     
     analysis_id: str = Field(..., description="Unique identifier for this analysis")
     timestamp: datetime = Field(default_factory=datetime.utcnow, description="Analysis timestamp")
@@ -81,16 +83,12 @@ class AnalysisResponse(BaseModel):
     # Metadata
     processing_summary: Dict[str, Any] = Field(default_factory=dict, description="Processing metadata")
     confidence_breakdown: Dict[str, int] = Field(default_factory=dict, description="Confidence scores by component")
-    
-    model_config = {
-        "json_encoders": {
-            datetime: lambda v: v.isoformat()
-        }
-    }
 
 
 class AnalysisError(BaseModel):
     """Error response model for analysis failures."""
+    
+    model_config = ConfigDict(from_attributes=True, json_encoders={datetime: lambda v: v.isoformat()})
     
     error_code: str = Field(..., description="Error code")
     error_message: str = Field(..., description="Human-readable error message")
@@ -115,6 +113,8 @@ class BatchAnalysisRequest(BaseModel):
 
 class BatchAnalysisResponse(BaseModel):
     """Response model for batch analysis."""
+    
+    model_config = ConfigDict(from_attributes=True, json_encoders={datetime: lambda v: v.isoformat()})
     
     batch_id: str = Field(..., description="Batch identifier")
     timestamp: datetime = Field(default_factory=datetime.utcnow, description="Batch processing timestamp")

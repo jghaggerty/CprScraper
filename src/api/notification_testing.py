@@ -268,11 +268,11 @@ class NotificationTestingAPI:
             logger.error(f"Failed to get test status: {e}")
             raise HTTPException(status_code=500, detail=f"Failed to get test status: {str(e)}")
     
-    @router.get("/test-report")
+    @router.post("/test-report")
     async def generate_test_report(
         self,
-        test_results: List[Dict[str, Any]] = Query([]),
-        format: str = Query("text", regex="^(text|json|html)$"),
+        test_results: List[Dict[str, Any]] = Body([]),
+        format: str = Query("text", pattern="^(text|json|html)$"),
         current_user: User = Depends(get_current_user)
     ) -> Dict[str, Any]:
         """Generate a test report from provided test results."""

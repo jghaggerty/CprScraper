@@ -19,7 +19,7 @@ from ..database.connection import get_db
 from ..database.models import User, UserRole, Role
 from ..reporting.report_customization import ReportCustomizationOptions, ReportCustomizationManager
 from ..reporting.report_distribution import ReportDistributionManager
-from ..notifications.enhanced_notifier import EnhancedNotifier
+from ..notifications.enhanced_notifier import EnhancedNotificationManager
 from ..utils.config_loader import get_notification_settings
 
 logger = logging.getLogger(__name__)
@@ -125,7 +125,7 @@ class ReportScheduler:
     def __init__(self):
         self.customization_manager = ReportCustomizationManager()
         self.distribution_manager = ReportDistributionManager()
-        self.notifier = EnhancedNotifier()
+        self.notifier = EnhancedNotificationManager()
         self.notification_config = get_notification_settings()
         
         # Active schedules
