@@ -24,33 +24,39 @@ An AI-powered monitoring system that tracks government agency form changes acros
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd CprScraper
    ```
 
 2. **Install dependencies**
+
    ```bash
    pip install -r requirements.txt
    ```
 
 3. **Set up environment variables**
+
    ```bash
    cp env.example .env
    # Edit .env with your configuration
    ```
 
 4. **Initialize the database**
+
    ```bash
    python main.py init-db
    ```
 
 5. **Load agency data**
+
    ```bash
    python main.py load-data
    ```
 
 6. **Start the system**
+
    ```bash
    python main.py start
    ```
@@ -143,16 +149,19 @@ The system provides RESTful API endpoints:
 ### Using Docker Compose
 
 1. **Build and start services**
+
    ```bash
    docker-compose up -d
    ```
 
 2. **View logs**
+
    ```bash
    docker-compose logs -f app
    ```
 
 3. **Stop services**
+
    ```bash
    docker-compose down
    ```
@@ -160,11 +169,13 @@ The system provides RESTful API endpoints:
 ### Using Docker
 
 1. **Build image**
+
    ```bash
    docker build -t payroll-monitor .
    ```
 
 2. **Run container**
+
    ```bash
    docker run -p 8000:8000 --env-file .env payroll-monitor
    ```
@@ -194,7 +205,7 @@ The system provides RESTful API endpoints:
 
 ### Project Structure
 
-```
+```plaintext
 CprScraper/
 ├── config/
 │   └── agencies.yaml          # Agency and form configurations
@@ -252,6 +263,7 @@ The system includes health check endpoints:
 ### Logging
 
 Logs are written to:
+
 - Console output
 - `logs/payroll_monitor.log` file
 - Structured logging for production
@@ -259,6 +271,7 @@ Logs are written to:
 ### Data Cleanup
 
 The system automatically cleans up old data:
+
 - Monitoring runs older than 90 days
 - Notifications older than 180 days
 - Temporary files and caches
