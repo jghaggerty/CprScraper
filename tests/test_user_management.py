@@ -297,6 +297,24 @@ class TestAuthAPI:
     def app(self):
         app = FastAPI()
         app.include_router(auth_router)
+        
+        # Override authentication for testing
+        from src.api.auth import get_current_user
+        
+        def override_get_current_user():
+            """Override authentication for testing."""
+            mock_user = Mock()
+            mock_user.id = 1
+            mock_user.username = "testuser"
+            mock_user.email = "test@example.com"
+            mock_user.first_name = "Test"
+            mock_user.last_name = "User"
+            mock_user.is_active = True
+            mock_user.is_superuser = True
+            mock_user.user_roles = []
+            return mock_user
+        
+        app.dependency_overrides[get_current_user] = override_get_current_user
         return app
     
     @pytest.fixture
@@ -624,6 +642,10 @@ class TestUserPreferences:
     @pytest.fixture
     def user_service(self):
         return UserService()
+    
+    @pytest.fixture
+    def mock_session(self):
+        return Mock(spec=Session)
     
     @patch('src.auth.user_service.get_db_session')
     def test_notification_preferences(self, mock_get_session, user_service, mock_session):
